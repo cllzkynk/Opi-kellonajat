@@ -61,13 +61,13 @@
             align-items: center;
             margin: 0 auto;
             width: 100%;
-            max-height: 45vh;
+            max-height: 42vh;
             position: relative;
         }
 
         #clockCanvas {
             max-width: min(90vw, 450px);
-            max-height: min(45vh, 450px);
+            max-height: min(42vh, 450px);
             width: auto;
             height: auto;
             cursor: grab;
@@ -174,10 +174,10 @@
 
             <!-- Yenilenmiş Seviye Butonları -->
             <div id="levelSelector" class="flex gap-1.5">
-                <button onclick="setLevel(1)" id="btn-level-1" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-green-100 text-green-700 border-2 border-green-500">Tam (تماما)</button>
-                <button onclick="setLevel(2)" id="btn-level-2" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300">Puoli (نصف)</button>
-                <button onclick="setLevel(3)" id="btn-level-3" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300">Vartti (ربع)</button>
-                <button onclick="setLevel(4)" id="btn-level-4" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300">Kaikki (الكل)</button>
+                <button onclick="setLevel(1)" id="btn-level-1" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-green-100 text-green-700 border-2 border-green-500 text-center">Tam (تماما)<br>Saat</button>
+                <button onclick="setLevel(2)" id="btn-level-2" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center">Puoli (نصف)<br>Buçuk</button>
+                <button onclick="setLevel(3)" id="btn-level-3" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center">Vartti (ربع)<br>Çeyrek</button>
+                <button onclick="setLevel(4)" id="btn-level-4" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center">Kaikki (الكل)<br>Hepsi</button>
             </div>
         </div>
 
@@ -194,16 +194,16 @@
                 </div>
                 
                 <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 text-center mb-2">
-                    <div id="timeWordsMain" class="text-base md:text-lg font-bold text-slate-800 italic">Kello on kaksitoista</div>
-                    <div id="arabicMain" class="text-sm md:text-base text-indigo-500 font-semibold arabic mt-1">الساعة هي الثانية عشرة</div>
+                    <div id="timeWordsMain" class="text-base md:text-lg font-bold text-slate-800 italic leading-snug">Kello on kaksitoista</div>
+                    <div id="arabicMain" class="text-sm md:text-base text-indigo-500 font-semibold arabic mt-1 leading-snug">الساعة هي الثانية عشرة</div>
                 </div>
 
                 <div class="alt-reading-block">
                     <div id="altSection" class="invisible">
                         <div class="text-[9px] uppercase text-slate-400 font-bold mb-1 text-center">tai voimme sanoa</div>
                         <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-200 text-center">
-                            <div id="timeWordsAlt" class="text-sm md:text-base font-bold text-slate-800 italic">-</div>
-                            <div id="arabicAlt" class="text-xs md:text-sm text-indigo-500 font-semibold arabic">-</div>
+                            <div id="timeWordsAlt" class="text-sm md:text-base font-bold text-slate-800 italic leading-snug">-</div>
+                            <div id="arabicAlt" class="text-xs md:text-sm text-indigo-500 font-semibold arabic mt-0.5 leading-snug">-</div>
                         </div>
                     </div>
                 </div>
@@ -218,18 +218,18 @@
                     <p class="text-2xl font-bold text-indigo-600" id="quizTime">12:00</p>
                     <p class="text-base text-slate-500 arabic" id="quizTimeAr">الثانية عشرة</p>
                     
-                    <button id="btnCheck" onclick="checkQuizAnswer()" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-all">Tarkista (تحقق) ✓</button>
+                    <button id="btnCheck" onclick="checkQuizAnswer()" class="mt-4 bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200">Tarkista (تحقق) ✓</button>
                 </div>
 
-                <div id="quizResult" class="hidden mt-2 text-center p-2 rounded-lg">
-                    <p class="font-bold text-sm mb-2"></p>
-                    <button onclick="nextQuizQuestion()" class="bg-slate-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold">Seuraava (التالي) →</button>
+                <div id="quizResult" class="hidden mt-2 text-center p-3 rounded-xl">
+                    <p class="font-bold text-lg mb-2"></p>
+                    <button onclick="nextQuizQuestion()" class="bg-slate-700 text-white px-6 py-2 rounded-lg text-sm font-bold shadow">Seuraava (التالي) →</button>
                 </div>
 
                 <div id="quizComplete" class="hidden text-center">
-                    <p class="text-3xl mb-1">🎉</p>
-                    <h2 class="text-xl font-bold">Valmis! Sait <span id="finalScore">0</span>/5</h2>
-                    <button onclick="setMode('learn')" class="mt-3 bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold text-sm">Uudestaan</button>
+                    <p class="text-4xl mb-2">🎉</p>
+                    <h2 class="text-2xl font-bold">Valmis! Sait <span id="finalScore">0</span>/5</h2>
+                    <button onclick="setMode('learn')" class="mt-4 bg-indigo-600 text-white px-8 py-2 rounded-xl font-bold">Uudestaan</button>
                 </div>
             </div>
         </div>
@@ -261,7 +261,7 @@
             <div class="space-y-2 text-sm">
                 <p>🟢 <b>Vihreä:</b> Yli / Past / Geçe</p>
                 <p>🔴 <b>Punainen:</b> Vaille / To / Kala</p>
-                <p>🎓 <b>Vinkki:</b> Liikuta akrebiä (tunti) tai yelkovania (minuutti) vapaasti!</p>
+                <p>🎓 <b>Vinkki:</b> Tartu viisariin ja pyöritä! Sovellus tunnistaa kumpaa viisaria haluat liikuttaa.</p>
             </div>
             <button onclick="toggleTips()" class="w-full mt-6 bg-indigo-600 text-white py-2 rounded-xl font-bold">Selvä!</button>
         </div>
@@ -291,13 +291,18 @@
                 document.getElementById('quizResult').classList.add('hidden');
                 document.getElementById('quizComplete').classList.add('hidden');
                 document.getElementById('quizQuestion').classList.remove('hidden');
+                document.getElementById('quizQuestion').style.opacity = '1';
             }
             updateDisplay();
         }
 
         function setLevel(l) {
             currentLevel = l;
-            for(let i=1; i<=4; i++) document.getElementById(`btn-level-${i}`).className = i === l ? 'btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-green-100 text-green-700 border-2 border-green-500' : 'btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300';
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`btn-level-${i}`).className = i === l ? 
+                    'btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-green-100 text-green-700 border-2 border-green-500 text-center' : 
+                    'btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center';
+            }
             snapToLevel(l); updateDisplay();
         }
 
@@ -333,6 +338,8 @@
         function drawClock() {
             ctx.clearRect(0,0,500,500);
             const m = currentMinutes % 60, h = Math.floor(currentMinutes/60) % 12, rad = (m*6-90)*(Math.PI/180);
+            
+            // Renkli halkalar
             if (currentLevel >= 2) {
                 ctx.beginPath(); ctx.lineWidth = 45; ctx.lineCap = 'butt'; ctx.strokeStyle = '#34d399'; ctx.arc(centerX, centerY, ringRadius, -Math.PI/2, rad, false); ctx.stroke();
                 ctx.beginPath(); ctx.strokeStyle = '#fb7185'; ctx.arc(centerX, centerY, ringRadius, rad, 1.5*Math.PI, false); ctx.stroke();
@@ -340,8 +347,10 @@
                 if (m < 58) drawTextOnRing(((60-m)%60).toString(), (rad + 1.5*Math.PI)/2, ringRadius, '#881337');
             }
             
+            // Kadran
             ctx.beginPath(); ctx.arc(centerX, centerY, clockRadius, 0, 2*Math.PI); ctx.fillStyle = 'white'; ctx.fill(); ctx.strokeStyle = '#334155'; ctx.lineWidth = 4; ctx.stroke();
             
+            // Sayılar
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             for (let i=1; i<=12; i++) {
                 const a = (i*30-90)*(Math.PI/180);
@@ -355,6 +364,7 @@
                 ctx.fillText(i.toString(), centerX + (clockRadius-38)*Math.cos(a), centerY + (clockRadius-38)*Math.sin(a));
             }
 
+            // Tırtıklar
             for (let i=0; i<60; i++) {
                 const a = (i*6-90)*(Math.PI/180);
                 const isQuarter = i % 15 === 0;
@@ -369,9 +379,14 @@
                 ctx.stroke();
             }
 
-            drawHand(((h + m/60)*30-90)*(Math.PI/180), clockRadius*0.55, 10, '#1e293b');
-            if (currentLevel >= 2) drawHand(rad, clockRadius*0.85, 4, '#4f46e5');
-            ctx.beginPath(); ctx.arc(centerX, centerY, 12, 0, 2*Math.PI); ctx.fillStyle = '#1e293b'; ctx.fill();
+            // Akrep
+            drawHand(((h + m/60)*30-90)*(Math.PI/180), clockRadius*0.55, 12, '#1e293b');
+            // Yelkovan (Görünürlük kontrolü)
+            if (currentLevel >= 2) drawHand(rad, clockRadius*0.85, 6, '#4f46e5');
+            
+            // Merkez Pim
+            ctx.beginPath(); ctx.arc(centerX, centerY, 14, 0, 2*Math.PI); ctx.fillStyle = '#1e293b'; ctx.fill();
+            ctx.beginPath(); ctx.arc(centerX, centerY, 6, 0, 2*Math.PI); ctx.fillStyle = 'white'; ctx.fill();
         }
 
         function drawTextOnRing(t, a, r, c) { ctx.fillStyle = c; ctx.font = '900 32px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, centerX+r*Math.cos(a), centerY+r*Math.sin(a)); }
@@ -444,7 +459,7 @@
 
         function checkQuizAnswer() {
             const target = quizQuestions[currentQuestionIndex] % 720, cur = currentMinutes % 720;
-            const isOk = Math.min(Math.abs(cur-target), 720-Math.abs(cur-target)) <= (currentLevel===4?2:0);
+            const isOk = Math.min(Math.abs(cur-target), 720-Math.abs(cur-target)) <= (currentLevel===4?3:0);
             if(isOk) { correctAnswers++; createConfetti(); }
             document.getElementById('quizQuestion').style.opacity = '0.4';
             const resDiv = document.getElementById('quizResult'); resDiv.classList.remove('hidden');
@@ -475,6 +490,7 @@
 
         function toggleTips() { document.getElementById('tipsOverlay').classList.toggle('active'); }
 
+        // Viisareiden tutkinta (Açı ve mesafe bazlı tutma)
         function startDragging(e) {
             if (currentMode === 'quiz' && !document.getElementById('quizResult').classList.contains('hidden')) return;
 
@@ -499,17 +515,22 @@
             const dM = Math.min(Math.abs(ang - mAngle), 360 - Math.abs(ang - mAngle));
             const dH = Math.min(Math.abs(ang - hAngle), 360 - Math.abs(ang - hAngle));
 
-            if (currentLevel === 1) { dragTarget = 'hour'; return; }
+            // Level 1: Sadece saat kolu hareket eder
+            if (currentLevel === 1) { 
+                if (dH < 60 || dist < 120) dragTarget = 'hour';
+                return; 
+            }
 
-            if (dist > 110) { 
-                if (dM < 50) dragTarget = 'minute';
+            // Gelişmiş seçim mantığı (Mesafe öncelikli)
+            if (dist > 130) { 
+                // Merkeze uzaksa yelkovanı seçer
+                if (dM < 60) dragTarget = 'minute';
                 else dragTarget = null;
-            } else if (dist > 15) { 
-                if (dH < dM && dH < 40) dragTarget = 'hour';
-                else if (dM < 40) dragTarget = 'minute';
-                else dragTarget = null;
-            } else {
-                dragTarget = null;
+            } else if (dist > 15) {
+                // Merkeze yakınsa akrebi önceler, ama yelkovan da seçilebilir
+                if (dH < dM && dH < 45) dragTarget = 'hour';
+                else if (dM < 45) dragTarget = 'minute';
+                else dragTarget = 'hour';
             }
         }
 
@@ -520,15 +541,19 @@
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
             const clientY = e.clientY || (e.touches && e.touches[0].clientY);
             const a = Math.atan2(clientY-(rect.top+250), clientX-(rect.left+250))*180/Math.PI+90, ang = a<0?a+360:a;
-            let h = Math.floor(currentMinutes/60)%12, m = currentMinutes%60;
             
-            if(dragTarget==='minute') { 
-                m = Math.round(ang/6)%60; 
-                currentMinutes = Math.floor(currentMinutes/60)*60+m; 
+            let currentH = Math.floor(currentMinutes / 60);
+            let currentM = currentMinutes % 60;
+            
+            if(dragTarget === 'minute') { 
+                currentM = Math.round(ang / 6) % 60; 
+                currentMinutes = (currentH * 60) + currentM; 
                 snapToLevel(currentLevel); 
-            } else { 
-                h = Math.floor(ang/30)%12; 
-                currentMinutes = h*60+m; 
+            } else if(dragTarget === 'hour') { 
+                currentH = Math.floor(ang / 30) % 12; 
+                currentMinutes = (currentH * 60) + currentM; 
+                // Seviye 1'de yelkovanı her zaman 00'da tut
+                if (currentLevel === 1) currentMinutes = currentH * 60;
             }
             updateDisplay();
         }
@@ -539,9 +564,14 @@
         
         canvas.addEventListener('touchstart', e => {
             startDragging(e);
-            e.preventDefault();
+            if (dragTarget) e.preventDefault();
         }, {passive:false});
-        canvas.addEventListener('touchmove', handleInteraction, {passive:false});
+        canvas.addEventListener('touchmove', e => {
+            if (dragTarget) {
+                handleInteraction(e);
+                e.preventDefault();
+            }
+        }, {passive:false});
         canvas.addEventListener('touchend', () => dragTarget = null);
 
         setLanguage('fi'); setLevel(1);
