@@ -1,25 +1,43 @@
 <!DOCTYPE html>
 <html lang="fi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kello</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-body { background:#111; display:flex; justify-content:center; align-items:center; height:100vh; }
-canvas { background:white; border-radius:50%; touch-action:none; }
-</style>
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Interaktiivinen Kello - Opi kellonajat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+        
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            touch-action:none;
+            font-family:'Plus Jakarta Sans','Noto Sans Arabic',sans-serif;
+            height:100vh;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .main-container {
+            height:100vh; width:100%; max-width:600px;
+            display:flex; flex-direction:column;
+            background:white;
+        }
+        #clockCanvas { cursor:grab; touch-action:none; }
+    </style>
+</head>
 <body>
 
-<div class="text-center text-white">
-    <canvas id="clockCanvas" width="400" height="400"></canvas>
+<div class="main-container">
 
-    <div class="mt-4 flex gap-2 justify-center items-center">
-        <div id="digitalClock" class="text-2xl font-mono">12:00</div>
-        <input id="timeInput" type="time" step="60" class="text-black px-2 py-1 rounded">
+<div style="text-align:center; padding:10px;">
+    <canvas id="clockCanvas" width="500" height="500"></canvas>
+
+    <div style="margin-top:10px;">
+        <span id="digitalClock" style="font-size:24px; font-weight:bold;">12:00</span>
+        <input id="timeInput" type="time" step="60" style="margin-left:10px;">
     </div>
+</div>
+
 </div>
 
 <script>
@@ -29,150 +47,134 @@ const ctx = canvas.getContext('2d');
 let currentMinutes = 0;
 let dragTarget = null;
 
-const cx = 200, cy = 200, r = 150;
+const centerX = 250, centerY = 250, clockRadius = 155;
 
 // ---------- DRAW ----------
 function drawClock() {
-    ctx.clearRect(0,0,400,400);
+    ctx.clearRect(0,0,500,500);
 
-    // face
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI*2);
-    ctx.fillStyle = "white";
+    ctx.arc(centerX, centerY, clockRadius, 0, 2*Math.PI);
+    ctx.fillStyle='white';
     ctx.fill();
     ctx.stroke();
 
-    // numbers
     for(let i=1;i<=12;i++){
-        let ang = (i*30-90)*Math.PI/180;
-        ctx.fillStyle="black";
-        ctx.font="20px Arial";
-        ctx.textAlign="center";
-        ctx.textBaseline="middle";
-        ctx.fillText(i, cx + Math.cos(ang)*(r-30), cy + Math.sin(ang)*(r-30));
+        const a = (i*30-90)*Math.PI/180;
+        ctx.fillText(i, centerX+(clockRadius-30)*Math.cos(a), centerY+(clockRadius-30)*Math.sin(a));
     }
 
-    let m = currentMinutes % 60;
-    let h = Math.floor(currentMinutes/60)%12;
+    const m = currentMinutes % 60;
+    const h = Math.floor(currentMinutes/60)%12;
 
-    // minute hand
-    drawHand(m*6, r-20, 4, "blue");
-
-    // hour hand
-    drawHand(h*30 + m*0.5, r-60, 6, "black");
-
-    // center
-    ctx.beginPath();
-    ctx.arc(cx, cy, 5, 0, Math.PI*2);
-    ctx.fill();
+    drawHand((h + m/60)*30, clockRadius*0.6, 8, '#000');
+    drawHand(m*6, clockRadius*0.9, 4, 'blue');
 }
 
 function drawHand(angle, length, width, color){
-    let a = (angle-90)*Math.PI/180;
+    const a = (angle-90)*Math.PI/180;
     ctx.beginPath();
-    ctx.lineWidth = width;
-    ctx.strokeStyle = color;
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + Math.cos(a)*length, cy + Math.sin(a)*length);
+    ctx.lineWidth=width;
+    ctx.strokeStyle=color;
+    ctx.moveTo(centerX, centerY);
+    ctx.lineTo(centerX+length*Math.cos(a), centerY+length*Math.sin(a));
     ctx.stroke();
 }
 
 // ---------- UPDATE ----------
 function updateDisplay(){
-    let h = Math.floor(currentMinutes/60)%12;
-    let m = currentMinutes%60;
+    const h = Math.floor(currentMinutes/60)%12;
+    const m = currentMinutes%60;
 
-    document.getElementById('digitalClock').innerText =
-        `${(h||12).toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+    const txt = `${(h||12).toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+    document.getElementById('digitalClock').innerText = txt;
 
-    document.getElementById('timeInput').value =
-        `${(h||12).toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+    document.getElementById('timeInput').value = txt;
 
     drawClock();
 }
 
-// ---------- DRAG FIX ----------
-function startDrag(e){
+// ---------- FIXED DRAG ----------
+function startDragging(e){
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX || e.touches[0].clientX) - rect.left;
     const y = (e.clientY || e.touches[0].clientY) - rect.top;
 
-    const dx = x - cx;
-    const dy = y - cy;
+    const dx = x - centerX;
+    const dy = y - centerY;
 
     const dist = Math.sqrt(dx*dx + dy*dy);
 
-    let angle = Math.atan2(dy, dx) * 180/Math.PI + 90;
+    let angle = Math.atan2(dy, dx)*180/Math.PI + 90;
     if(angle<0) angle+=360;
 
-    let m = currentMinutes%60;
-    let h = Math.floor(currentMinutes/60)%12;
+    const m = currentMinutes%60;
+    const h = Math.floor(currentMinutes/60)%12;
 
-    let mAngle = m*6;
-    let hAngle = h*30 + m*0.5;
+    const mAngle = m*6;
+    const hAngle = h*30 + m*0.5;
 
-    let diffM = Math.min(Math.abs(angle-mAngle), 360-Math.abs(angle-mAngle));
-    let diffH = Math.min(Math.abs(angle-hAngle), 360-Math.abs(angle-hAngle));
+    const diffM = Math.min(Math.abs(angle-mAngle), 360-Math.abs(angle-mAngle));
+    const diffH = Math.min(Math.abs(angle-hAngle), 360-Math.abs(angle-hAngle));
 
-    if(dist > 100){
-        dragTarget = diffM < 25 ? "minute" : null;
+    if(dist > 120){
+        dragTarget = diffM < 30 ? 'minute' : null;
     } else {
-        dragTarget = diffH < 25 ? "hour" : null;
+        dragTarget = diffH < 30 ? 'hour' : null;
     }
 
     if(!dragTarget){
-        dragTarget = diffM < diffH ? "minute" : "hour";
+        dragTarget = diffM < diffH ? 'minute' : 'hour';
     }
 }
 
-function moveDrag(e){
+function handleInteraction(e){
     if(!dragTarget) return;
 
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX || e.touches[0].clientX) - rect.left;
     const y = (e.clientY || e.touches[0].clientY) - rect.top;
 
-    const dx = x - cx;
-    const dy = y - cy;
+    const dx = x - centerX;
+    const dy = y - centerY;
 
-    let angle = Math.atan2(dy, dx) * 180/Math.PI + 90;
+    let angle = Math.atan2(dy, dx)*180/Math.PI + 90;
     if(angle<0) angle+=360;
 
     let h = Math.floor(currentMinutes/60);
     let m = currentMinutes%60;
 
-    if(dragTarget === "minute"){
+    if(dragTarget === 'minute'){
         m = Math.round(angle/6)%60;
     } else {
-        h = Math.floor(angle/30)%12;
+        const newHour = angle / 30;
+        h = Math.floor(newHour)%12;
     }
 
     currentMinutes = h*60 + m;
     updateDisplay();
 }
 
-function stopDrag(){
-    dragTarget = null;
-}
+function stopDragging(){ dragTarget = null; }
 
 // ---------- INPUT ----------
 document.getElementById('timeInput').addEventListener('input', e=>{
-    let val = e.target.value;
+    const val = e.target.value;
     if(!val) return;
 
-    let [h,m] = val.split(':').map(Number);
+    const [h,m] = val.split(':').map(Number);
     currentMinutes = (h%12)*60 + m;
     updateDisplay();
 });
 
 // ---------- EVENTS ----------
-canvas.addEventListener('mousedown', startDrag);
-window.addEventListener('mousemove', moveDrag);
-window.addEventListener('mouseup', stopDrag);
+canvas.addEventListener('mousedown', startDragging);
+window.addEventListener('mousemove', handleInteraction);
+window.addEventListener('mouseup', stopDragging);
 
-canvas.addEventListener('touchstart', startDrag, {passive:false});
-canvas.addEventListener('touchmove', moveDrag, {passive:false});
-canvas.addEventListener('touchend', stopDrag);
+canvas.addEventListener('touchstart', startDragging);
+canvas.addEventListener('touchmove', handleInteraction);
+canvas.addEventListener('touchend', stopDragging);
 
 // ---------- INIT ----------
 updateDisplay();
