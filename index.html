@@ -380,12 +380,32 @@
                 ctx.stroke();
             }
 
-            // 3. Akrep ve Yelkovan
+            // 3. Akrep ve Yelkovan (İnce tasarım)
             const hAngle = ((h + m/60) * 30 - 90) * (Math.PI/180);
             const yAngle = (m * 6 - 90) * (Math.PI/180);
             
-            drawHand(hAngle, clockRadius * 0.55, 14, '#1e293b'); 
-            drawHand(yAngle, clockRadius * 0.85, 8, '#4f46e5');  
+            // Akrep (saat ibresi) - kalın ve kısa
+            drawHand(hAngle, clockRadius * 0.55, 10, '#1e293b'); 
+            
+            // Yelkovan (dakika ibresi) - ince ve uzun
+            drawHand(yAngle, clockRadius * 0.85, 4, '#4f46e5');  
+            
+            // Yelkovan üzerinde tutuş halkası (ortasında belirgin nokta)
+            const gripX = centerX + (clockRadius * 0.42) * Math.cos(yAngle);
+            const gripY = centerY + (clockRadius * 0.42) * Math.sin(yAngle);
+            ctx.beginPath(); 
+            ctx.arc(gripX, gripY, 14, 0, 2 * Math.PI); 
+            ctx.fillStyle = '#818cf8'; 
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // İç halka (görsel detay)
+            ctx.beginPath(); 
+            ctx.arc(gripX, gripY, 6, 0, 2 * Math.PI); 
+            ctx.fillStyle = '#4f46e5'; 
+            ctx.fill();
 
             // Merkez Pin
             ctx.beginPath(); ctx.arc(centerX, centerY, 12, 0, 2 * Math.PI); ctx.fillStyle = '#1e293b'; ctx.fill();
