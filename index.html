@@ -172,11 +172,12 @@
                 </button>
             </div>
 
+            <!-- Yenilenmiş Seviye Butonları -->
             <div id="levelSelector" class="flex gap-1.5">
-                <button onclick="setLevel(1)" id="btn-level-1" class="btn-level flex-1 py-1 rounded-md text-[10px] font-bold bg-green-100 text-green-700 border-2 border-green-500">Taso 1</button>
-                <button onclick="setLevel(2)" id="btn-level-2" class="btn-level flex-1 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300">Taso 2</button>
-                <button onclick="setLevel(3)" id="btn-level-3" class="btn-level flex-1 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300">Taso 3</button>
-                <button onclick="setLevel(4)" id="btn-level-4" class="btn-level flex-1 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300">Taso 4</button>
+                <button onclick="setLevel(1)" id="btn-level-1" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-green-100 text-green-700 border-2 border-green-500">Tam (تماما)</button>
+                <button onclick="setLevel(2)" id="btn-level-2" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300">Puoli (نصف)</button>
+                <button onclick="setLevel(3)" id="btn-level-3" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300">Vartti (ربع)</button>
+                <button onclick="setLevel(4)" id="btn-level-4" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300">Kaikki (الكل)</button>
             </div>
         </div>
 
@@ -228,7 +229,7 @@
                 <div id="quizComplete" class="hidden text-center">
                     <p class="text-3xl mb-1">🎉</p>
                     <h2 class="text-xl font-bold">Valmis! Sait <span id="finalScore">0</span>/5</h2>
-                    <button onclick="setMode('learn')" class="mt-3 bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold text-sm">Takaisin</button>
+                    <button onclick="setMode('learn')" class="mt-3 bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold text-sm">Uudestaan</button>
                 </div>
             </div>
         </div>
@@ -260,7 +261,7 @@
             <div class="space-y-2 text-sm">
                 <p>🟢 <b>Vihreä:</b> Yli / Past / Geçe</p>
                 <p>🔴 <b>Punainen:</b> Vaille / To / Kala</p>
-                <p>🎓 <b>Fince Vinkki:</b> "Puoli kymmenen" on 9:30 (puoli tuntia kymmeneen).</p>
+                <p>🎓 <b>Vinkki:</b> Liikuta akrebiä (tunti) tai yelkovania (minuutti) vapaasti!</p>
             </div>
             <button onclick="toggleTips()" class="w-full mt-6 bg-indigo-600 text-white py-2 rounded-xl font-bold">Selvä!</button>
         </div>
@@ -287,13 +288,16 @@
                 document.getElementById('readingsPanel').classList.remove('hidden');
                 document.getElementById('quizPanel').classList.add('hidden');
                 document.getElementById('levelSelector').classList.remove('invisible');
+                document.getElementById('quizResult').classList.add('hidden');
+                document.getElementById('quizComplete').classList.add('hidden');
+                document.getElementById('quizQuestion').classList.remove('hidden');
             }
             updateDisplay();
         }
 
         function setLevel(l) {
             currentLevel = l;
-            for(let i=1; i<=4; i++) document.getElementById(`btn-level-${i}`).className = i === l ? 'btn-level flex-1 py-1 rounded-md text-[10px] font-bold bg-green-100 text-green-700 border-2 border-green-500' : 'btn-level flex-1 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300';
+            for(let i=1; i<=4; i++) document.getElementById(`btn-level-${i}`).className = i === l ? 'btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-green-100 text-green-700 border-2 border-green-500' : 'btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300';
             snapToLevel(l); updateDisplay();
         }
 
@@ -315,18 +319,13 @@
 
         function playAudio() {
             if ('speechSynthesis' in window) {
-                // Katkaistaan edellinen puhe
                 window.speechSynthesis.cancel();
-                
                 const text = document.getElementById('timeWordsMain').innerText;
                 const utterance = new SpeechSynthesisUtterance(text);
-                
-                // Asetetaan kieli
                 if (language === 'fi') utterance.lang = 'fi-FI';
                 else if (language === 'en') utterance.lang = 'en-US';
                 else if (language === 'tr') utterance.lang = 'tr-TR';
-                
-                utterance.rate = 0.9; // Hieman hitaampi selkeyden vuoksi
+                utterance.rate = 0.9;
                 window.speechSynthesis.speak(utterance);
             }
         }
@@ -341,10 +340,8 @@
                 if (m < 58) drawTextOnRing(((60-m)%60).toString(), (rad + 1.5*Math.PI)/2, ringRadius, '#881337');
             }
             
-            // Kadran yüzeyi
             ctx.beginPath(); ctx.arc(centerX, centerY, clockRadius, 0, 2*Math.PI); ctx.fillStyle = 'white'; ctx.fill(); ctx.strokeStyle = '#334155'; ctx.lineWidth = 4; ctx.stroke();
             
-            // Rakamlar
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             for (let i=1; i<=12; i++) {
                 const a = (i*30-90)*(Math.PI/180);
@@ -358,35 +355,22 @@
                 ctx.fillText(i.toString(), centerX + (clockRadius-38)*Math.cos(a), centerY + (clockRadius-38)*Math.sin(a));
             }
 
-            // Tırtıklar
             for (let i=0; i<60; i++) {
                 const a = (i*6-90)*(Math.PI/180);
                 const isQuarter = i % 15 === 0;
                 const isBig = i % 5 === 0;
-                
                 ctx.beginPath(); 
-                if (isQuarter) {
-                    ctx.lineWidth = 6;
-                    ctx.strokeStyle = '#1e1b4b';
-                } else if (isBig) {
-                    ctx.lineWidth = 4;
-                    ctx.strokeStyle = '#0f172a';
-                } else {
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = '#cbd5e1';
-                }
-                
+                if (isQuarter) { ctx.lineWidth = 6; ctx.strokeStyle = '#1e1b4b'; }
+                else if (isBig) { ctx.lineWidth = 4; ctx.strokeStyle = '#0f172a'; }
+                else { ctx.lineWidth = 2; ctx.strokeStyle = '#cbd5e1'; }
                 const startDist = isQuarter ? clockRadius - 22 : (isBig ? clockRadius - 18 : clockRadius - 10);
                 ctx.moveTo(centerX + startDist * Math.cos(a), centerY + startDist * Math.sin(a));
                 ctx.lineTo(centerX + clockRadius * Math.cos(a), centerY + clockRadius * Math.sin(a)); 
                 ctx.stroke();
             }
 
-            // İbreler
             drawHand(((h + m/60)*30-90)*(Math.PI/180), clockRadius*0.55, 10, '#1e293b');
             if (currentLevel >= 2) drawHand(rad, clockRadius*0.85, 4, '#4f46e5');
-            
-            // Merkez
             ctx.beginPath(); ctx.arc(centerX, centerY, 12, 0, 2*Math.PI); ctx.fillStyle = '#1e293b'; ctx.fill();
         }
 
@@ -453,6 +437,7 @@
             document.getElementById('quizTimeAr').innerText = formatTimeWords(h, m).mainAr;
             document.getElementById('quizProgress').style.width = `${(currentQuestionIndex/5)*100}%`;
             document.getElementById('quizQuestion').classList.remove('hidden');
+            document.getElementById('quizQuestion').style.opacity = '1';
             document.getElementById('quizResult').classList.add('hidden');
             document.getElementById('quizComplete').classList.add('hidden');
         }
@@ -461,7 +446,7 @@
             const target = quizQuestions[currentQuestionIndex] % 720, cur = currentMinutes % 720;
             const isOk = Math.min(Math.abs(cur-target), 720-Math.abs(cur-target)) <= (currentLevel===4?2:0);
             if(isOk) { correctAnswers++; createConfetti(); }
-            document.getElementById('quizQuestion').classList.add('hidden');
+            document.getElementById('quizQuestion').style.opacity = '0.4';
             const resDiv = document.getElementById('quizResult'); resDiv.classList.remove('hidden');
             resDiv.querySelector('p').innerHTML = isOk ? '✅ <span class="text-green-600">Oikein! (صحيح)</span>' : '❌ <span class="text-red-600">Väärin (خطأ)</span>';
         }
@@ -469,6 +454,7 @@
         function nextQuizQuestion() {
             currentQuestionIndex++;
             if (currentQuestionIndex >= 5) {
+                document.getElementById('quizQuestion').classList.add('hidden');
                 document.getElementById('quizResult').classList.add('hidden');
                 document.getElementById('quizComplete').classList.remove('hidden');
                 document.getElementById('finalScore').innerText = correctAnswers;
@@ -489,50 +475,73 @@
 
         function toggleTips() { document.getElementById('tipsOverlay').classList.toggle('active'); }
 
-        canvas.addEventListener('mousedown', e => {
-            const rect = canvas.getBoundingClientRect(), x = (e.clientX||e.touches[0].clientX)-rect.left, y = (e.clientY||e.touches[0].clientY)-rect.top;
-            const a = Math.atan2(y-250, x-250)*180/Math.PI+90, ang = a<0?a+360:a;
-            const h = Math.floor(currentMinutes/60)%12, m = currentMinutes%60;
-            const dM = Math.min(Math.abs(ang-m*6), 360-Math.abs(ang-m*6)), dH = Math.min(Math.abs(ang-(h*30+m*0.5)), 360-Math.abs(ang-(h*30+m*0.5)));
-            dragTarget = currentLevel===1?'hour':(dM<dH? 'minute':'hour');
-        });
+        function startDragging(e) {
+            if (currentMode === 'quiz' && !document.getElementById('quizResult').classList.contains('hidden')) return;
 
-        window.addEventListener('mousemove', e => {
-            if(!dragTarget) return; e.preventDefault();
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-            const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            
+            const dx = x - 250;
+            const dy = y - 250;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            let angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+            const ang = angle < 0 ? angle + 360 : angle;
+            
+            const h = Math.floor(currentMinutes / 60) % 12; 
+            const m = currentMinutes % 60;
+            const mAngle = m * 6;
+            const hAngle = (h * 30 + m * 0.5);
+            
+            const dM = Math.min(Math.abs(ang - mAngle), 360 - Math.abs(ang - mAngle));
+            const dH = Math.min(Math.abs(ang - hAngle), 360 - Math.abs(ang - hAngle));
+
+            if (currentLevel === 1) { dragTarget = 'hour'; return; }
+
+            if (dist > 110) { 
+                if (dM < 50) dragTarget = 'minute';
+                else dragTarget = null;
+            } else if (dist > 15) { 
+                if (dH < dM && dH < 40) dragTarget = 'hour';
+                else if (dM < 40) dragTarget = 'minute';
+                else dragTarget = null;
+            } else {
+                dragTarget = null;
+            }
+        }
+
+        function handleInteraction(e) {
+            if (!dragTarget) return; 
+            if (e.cancelable) e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
             const a = Math.atan2(clientY-(rect.top+250), clientX-(rect.left+250))*180/Math.PI+90, ang = a<0?a+360:a;
             let h = Math.floor(currentMinutes/60)%12, m = currentMinutes%60;
-            if(dragTarget==='minute') { m = Math.round(ang/6)%60; currentMinutes = Math.floor(currentMinutes/60)*60+m; snapToLevel(currentLevel); }
-            else { h = Math.floor(ang/30)%12; currentMinutes = h*60+m; }
+            
+            if(dragTarget==='minute') { 
+                m = Math.round(ang/6)%60; 
+                currentMinutes = Math.floor(currentMinutes/60)*60+m; 
+                snapToLevel(currentLevel); 
+            } else { 
+                h = Math.floor(ang/30)%12; 
+                currentMinutes = h*60+m; 
+            }
             updateDisplay();
-        });
+        }
 
+        canvas.addEventListener('mousedown', startDragging);
+        window.addEventListener('mousemove', handleInteraction);
         window.addEventListener('mouseup', () => dragTarget = null);
         
         canvas.addEventListener('touchstart', e => {
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect(), x = touch.clientX-rect.left, y = touch.clientY-rect.top;
-            const a = Math.atan2(y-250, x-250)*180/Math.PI+90, ang = a<0?a+360:a;
-            const h = Math.floor(currentMinutes/60)%12, m = currentMinutes%60;
-            const dM = Math.min(Math.abs(ang-m*6), 360-Math.abs(ang-m*6)), dH = Math.min(Math.abs(ang-(h*30+m*0.5)), 360-Math.abs(ang-(h*30+m*0.5)));
-            dragTarget = currentLevel===1?'hour':(dM<dH? 'minute':'hour');
+            startDragging(e);
             e.preventDefault();
         }, {passive:false});
-
-        canvas.addEventListener('touchmove', e => {
-            if(!dragTarget) return;
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            const a = Math.atan2(touch.clientY-(rect.top+250), touch.clientX-(rect.left+250))*180/Math.PI+90, ang = a<0?a+360:a;
-            let h = Math.floor(currentMinutes/60)%12, m = currentMinutes%60;
-            if(dragTarget==='minute') { m = Math.round(ang/6)%60; currentMinutes = Math.floor(currentMinutes/60)*60+m; snapToLevel(currentLevel); }
-            else { h = Math.floor(ang/30)%12; currentMinutes = h*60+m; }
-            updateDisplay();
-            e.preventDefault();
-        }, {passive:false});
-        
+        canvas.addEventListener('touchmove', handleInteraction, {passive:false});
         canvas.addEventListener('touchend', () => dragTarget = null);
 
         setLanguage('fi'); setLevel(1);
