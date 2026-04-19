@@ -62,6 +62,7 @@
             margin: 0 auto;
             width: 100%;
             max-height: 50vh;
+            position: relative;
         }
 
         #clockCanvas {
@@ -71,6 +72,7 @@
             height: auto;
             cursor: grab;
             touch-action: none;
+            transition: opacity 0.3s ease;
         }
 
         #clockCanvas:active {
@@ -106,59 +108,76 @@
             font-family: 'Noto Sans Arabic', sans-serif;
         }
 
-        .btn-lang {
+        .btn-lang, .btn-mode, .btn-level {
             transition: all 0.2s ease;
             white-space: nowrap;
         }
 
-        .btn-lang:active {
+        .btn-lang:active, .btn-mode:active, .btn-level:active {
             transform: scale(0.95);
         }
 
-        /* Küçük ekranlar için */
-        @media (max-height: 700px) {
-            .header-section {
-                padding: 0.5rem 1rem 0.35rem;
+        /* Quiz overlay */
+        .quiz-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .quiz-overlay.active {
+            display: flex;
+        }
+
+        .quiz-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            max-width: 90%;
+            width: 450px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
             }
-            .clock-canvas-wrapper {
-                max-height: 42vh;
-            }
-            #clockCanvas {
-                max-height: min(42vh, 380px);
-            }
-            .readings-panel {
-                padding: 0.75rem;
-                margin-top: 0.5rem;
-            }
-            .alt-reading-block {
-                min-height: 60px;
-            }
-            .footer-section {
-                padding: 0.5rem 1rem;
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        /* Çok küçük ekranlar için */
-        @media (max-height: 600px) {
-            .header-section {
-                padding: 0.4rem 0.75rem 0.25rem;
-            }
-            .clock-canvas-wrapper {
-                max-height: 38vh;
-            }
-            #clockCanvas {
-                max-height: min(38vh, 320px);
-            }
-            .readings-panel {
-                padding: 0.6rem;
-                margin-top: 0.4rem;
-            }
-            .alt-reading-block {
-                min-height: 50px;
-            }
-            .footer-section {
-                padding: 0.4rem 0.75rem;
-            }
+        .pulse {
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            transition: width 0.4s ease;
         }
 
         /* Tablet ve üzeri için */
@@ -172,13 +191,47 @@
             }
         }
 
-        /* Landscape mode için özel düzenleme */
-        @media (orientation: landscape) and (max-height: 500px) {
-            .clock-canvas-wrapper {
-                max-height: 55vh;
-            }
-            #clockCanvas {
-                max-height: min(55vh, 300px);
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 100;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        /* Level indicator styles */
+        .level-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f39c12;
+            position: absolute;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
             }
         }
     </style>
@@ -187,32 +240,68 @@
 
     <div class="main-container">
         
-        <!-- Başlık Bölümü -->
+        <!-- Header -->
         <div class="header-section">
-            <h1 class="text-sm md:text-base font-bold text-slate-800 text-center leading-tight">
-                Opi kellonajat <span class="text-indigo-600 font-normal arabic ml-1">(تعلم الأوقات)</span>
-            </h1>
-            <div class="bg-indigo-50 border border-indigo-200 text-indigo-700 py-1 px-2 mt-1 rounded-lg inline-block mx-auto block w-fit">
-                <p class="text-[9px] md:text-[10px] font-bold">🕒 1 tunti = 60 minuuttia <span class="arabic font-normal ml-1">(ساعة = 60 دقيقة)</span></p>
+            <div class="flex items-center justify-between mb-1">
+                <h1 class="text-sm md:text-base font-bold text-slate-800 leading-tight flex-1">
+                    Opi kellonajat <span class="text-indigo-600 font-normal arabic ml-1">(تعلم الأوقات)</span>
+                </h1>
+                <button onclick="toggleTips()" class="text-2xl hover:scale-110 transition-transform">💡</button>
+            </div>
+            
+            <!-- Mode Tabs -->
+            <div class="flex gap-2 mb-2">
+                <button onclick="setMode('learn')" id="btn-mode-learn" class="btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-indigo-600 text-white">
+                    📚 Opi (تعلم)
+                </button>
+                <button onclick="setMode('quiz')" id="btn-mode-quiz" class="btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-slate-200 text-slate-600">
+                    🎯 Testi (اختبار)
+                </button>
+            </div>
+
+            <!-- Level Selection (only in learn mode) -->
+            <div id="levelSelector" class="flex gap-1.5 mb-1">
+                <button onclick="setLevel(1)" id="btn-level-1" class="btn-level flex-1 px-2 py-1 rounded-md text-[10px] font-bold bg-green-100 text-green-700 border-2 border-green-500">
+                    Taso 1<br><span class="arabic text-[8px]">(المستوى ١)</span>
+                </button>
+                <button onclick="setLevel(2)" id="btn-level-2" class="btn-level flex-1 px-2 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300">
+                    Taso 2<br><span class="arabic text-[8px]">(المستوى ٢)</span>
+                </button>
+                <button onclick="setLevel(3)" id="btn-level-3" class="btn-level flex-1 px-2 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300">
+                    Taso 3<br><span class="arabic text-[8px]">(المستوى ٣)</span>
+                </button>
+                <button onclick="setLevel(4)" id="btn-level-4" class="btn-level flex-1 px-2 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300">
+                    Taso 4<br><span class="arabic text-[8px]">(المستوى ٤)</span>
+                </button>
+            </div>
+
+            <!-- Level Info -->
+            <div id="levelInfo" class="bg-blue-50 border border-blue-200 text-blue-700 py-1 px-2 rounded-lg text-center">
+                <p class="text-[9px] md:text-[10px] font-bold">
+                    🎓 <span id="levelDesc">Tam saatler (الساعات الكاملة)</span>
+                </p>
             </div>
         </div>
 
-        <!-- Ana Görüntüleme Alanı (Saat + Okunuşlar) -->
+        <!-- Main Clock Area -->
         <div class="clock-display-area">
             
-            <!-- Saat Kadranı -->
             <div class="clock-canvas-wrapper">
                 <canvas id="clockCanvas" width="500" height="500"></canvas>
+                <div id="tooltip" class="tooltip"></div>
             </div>
             
-            <!-- Okunuş Paneli -->
+            <!-- Readings Panel -->
             <div class="readings-panel">
-                <!-- Dijital Saat -->
-                <div id="digitalClock" class="text-2xl md:text-3xl font-mono font-bold text-indigo-600 tracking-widest text-center mb-2">
-                    12:00
+                <div class="flex items-center justify-center gap-2 mb-2">
+                    <div id="digitalClock" class="text-2xl md:text-3xl font-mono font-bold text-indigo-600 tracking-widest text-center">
+                        12:00
+                    </div>
+                    <button onclick="playAudio()" class="text-2xl hover:scale-110 transition-transform" title="Kuuntele ääntäminen">
+                        🔊
+                    </button>
                 </div>
                 
-                <!-- Ana Okunuş -->
                 <div class="bg-white p-2.5 md:p-3 rounded-xl shadow-sm border border-slate-200 text-center mb-2">
                     <div id="timeWordsMain" class="text-base md:text-lg font-bold text-slate-800 italic leading-snug">
                         Kello on kaksitoista
@@ -222,7 +311,6 @@
                     </div>
                 </div>
 
-                <!-- Alternatif Okunuş (Sabit Yükseklik) -->
                 <div class="alt-reading-block">
                     <div id="altSection" class="invisible">
                         <div class="text-[8px] md:text-[9px] uppercase text-slate-400 font-bold mb-1 text-center flex items-center justify-center gap-1.5">
@@ -243,10 +331,9 @@
             </div>
         </div>
 
-        <!-- Alt Bölüm: Kompakt Footer -->
+        <!-- Footer -->
         <div class="footer-section">
-            <!-- Dakika Sayaçları - Kompakt Grid -->
-            <div class="grid grid-cols-2 gap-2 mb-2">
+            <div id="countersSection" class="grid grid-cols-2 gap-2 mb-2">
                 <div class="bg-emerald-50 px-2 py-1.5 rounded-lg border border-emerald-200 text-center">
                     <div class="flex items-center justify-center gap-1.5">
                         <div class="flex-1 text-left">
@@ -267,7 +354,6 @@
                 </div>
             </div>
 
-            <!-- Dil Butonları - Kompakt -->
             <div class="flex gap-1.5 justify-center">
                 <button onclick="setLanguage('fi')" id="btn-fi" class="btn-lang px-3 py-1.5 rounded-full font-bold text-[9px] md:text-[10px] bg-indigo-600 text-white shadow-md">
                     Suomi
@@ -282,27 +368,189 @@
         </div>
     </div>
 
+    <!-- Quiz Overlay -->
+    <div id="quizOverlay" class="quiz-overlay">
+        <div class="quiz-card">
+            <div class="progress-bar">
+                <div id="quizProgress" class="progress-fill" style="width: 0%"></div>
+            </div>
+            
+            <div id="quizQuestion" class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Näytä kello:</h2>
+                <p class="text-3xl font-bold text-indigo-600" id="quizTime">12:00</p>
+                <p class="text-lg text-slate-600 arabic mt-2" id="quizTimeAr">الثانية عشرة</p>
+            </div>
+
+            <div class="text-center">
+                <p class="text-sm text-slate-500 mb-4">Vedä kellonosoittimia oikeaan aikaan</p>
+                <button onclick="checkQuizAnswer()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all">
+                    Tarkista (تحقق) ✓
+                </button>
+            </div>
+
+            <div id="quizResult" class="hidden mt-4 p-4 rounded-xl text-center">
+                <p class="text-xl font-bold mb-2"></p>
+                <button onclick="nextQuizQuestion()" class="bg-slate-600 text-white px-6 py-2 rounded-lg font-bold">
+                    Seuraava (التالي) →
+                </button>
+            </div>
+
+            <div id="quizComplete" class="hidden text-center">
+                <div class="text-6xl mb-4">🎉</div>
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Hienoa!</h2>
+                <p class="text-xl text-slate-600 mb-4">
+                    Sait <span id="finalScore" class="font-bold text-indigo-600">5</span>/5 oikein!
+                </p>
+                <p class="text-lg arabic text-indigo-500 mb-4">ممتاز! أحسنت!</p>
+                <button onclick="closeQuiz()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold text-lg">
+                    Sulje (إغلاق)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tips Overlay -->
+    <div id="tipsOverlay" class="quiz-overlay">
+        <div class="quiz-card" style="max-width: 500px;">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4 text-center">💡 Vinkkejä oppimiseen</h2>
+            <div class="space-y-3 text-sm">
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <p class="font-bold text-blue-900">🟢 Vihreä rengas = "yli" (geçe)</p>
+                    <p class="text-blue-700">Kun dakika ibresi vihreällä alueella, käytä "yli"</p>
+                    <p class="arabic text-blue-600 text-xs mt-1">الحلقة الخضراء = "بعد"</p>
+                </div>
+                
+                <div class="bg-red-50 p-3 rounded-lg border border-red-200">
+                    <p class="font-bold text-red-900">🔴 Punainen rengas = "vaille" (kala)</p>
+                    <p class="text-red-700">Kun dakika ibresi punaisella alueella, käytä "vaille"</p>
+                    <p class="arabic text-red-600 text-xs mt-1">الحلقة الحمراء = "إلا"</p>
+                </div>
+
+                <div class="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                    <p class="font-bold text-purple-900">🎯 Erikoisajat:</p>
+                    <p class="text-purple-700">• 15 min = varttia / çeyrek / ربع</p>
+                    <p class="text-purple-700">• 30 min = puoli / buçuk / نصف</p>
+                    <p class="text-purple-700">• 45 min = varttia vaille / çeyrek var / إلا ربع</p>
+                </div>
+
+                <div class="bg-green-50 p-3 rounded-lg border border-green-200">
+                    <p class="font-bold text-green-900">🏫 Finlandiya'da:</p>
+                    <p class="text-green-700">"Puoli seitsemän" = klo 6:30</p>
+                    <p class="text-green-700 text-xs">(Dikkat: Bir sonraki saatin yarısı!)</p>
+                    <p class="arabic text-green-600 text-xs mt-1">انتبه: نصف الساعة القادمة!</p>
+                </div>
+            </div>
+            <button onclick="closeTips()" class="w-full mt-4 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold">
+                Selvä! (حسناً)
+            </button>
+        </div>
+    </div>
+
     <script>
         const canvas = document.getElementById('clockCanvas');
         const ctx = canvas.getContext('2d');
-        const digitalClock = document.getElementById('digitalClock');
-        const timeWordsMain = document.getElementById('timeWordsMain');
-        const arabicMain = document.getElementById('arabicMain');
-        const timeWordsAlt = document.getElementById('timeWordsAlt');
-        const arabicAlt = document.getElementById('arabicAlt');
-        const altSection = document.getElementById('altSection');
-        const pastCounter = document.getElementById('past-counter');
-        const toCounter = document.getElementById('to-counter');
-        const connectorText = document.getElementById('connectorText');
         
         let language = 'fi';
         let currentMinutes = 0; 
         let dragTarget = null;
+        let currentLevel = 1;
+        let currentMode = 'learn';
+        
+        // Quiz state
+        let quizQuestions = [];
+        let currentQuestionIndex = 0;
+        let correctAnswers = 0;
         
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
         const clockRadius = 155; 
         const ringRadius = 215; 
+
+        // Level descriptions
+        const levelDescriptions = {
+            fi: [
+                "Tam saatler (الساعات الكاملة)",
+                "Tam saatler + Yarım (الساعات والنصف)",
+                "Çeyrekler dahil (مع الأرباع)",
+                "Tüm dakikalar (كل الدقائق)"
+            ],
+            en: [
+                "Full hours only (الساعات الكاملة)",
+                "Full hours + Half (الساعات والنصف)",
+                "With quarters (مع الأرباع)",
+                "All minutes (كل الدقائق)"
+            ],
+            tr: [
+                "Sadece tam saatler (الساعات الكاملة)",
+                "Tam saatler + Buçuk (الساعات والنصف)",
+                "Çeyrekler dahil (مع الأرباع)",
+                "Tüm dakikalar (كل الدقائق)"
+            ]
+        };
+
+        function setMode(mode) {
+            currentMode = mode;
+            
+            ['learn', 'quiz'].forEach(m => {
+                const btn = document.getElementById(`btn-mode-${m}`);
+                if (m === mode) {
+                    btn.className = 'btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-indigo-600 text-white';
+                } else {
+                    btn.className = 'btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-slate-200 text-slate-600';
+                }
+            });
+
+            if (mode === 'quiz') {
+                document.getElementById('levelSelector').style.display = 'none';
+                document.getElementById('levelInfo').style.display = 'none';
+                startQuiz();
+            } else {
+                document.getElementById('levelSelector').style.display = 'flex';
+                document.getElementById('levelInfo').style.display = 'block';
+                document.getElementById('quizOverlay').classList.remove('active');
+            }
+        }
+
+        function setLevel(level) {
+            currentLevel = level;
+            
+            [1, 2, 3, 4].forEach(l => {
+                const btn = document.getElementById(`btn-level-${l}`);
+                if (l === level) {
+                    btn.className = 'btn-level flex-1 px-2 py-1 rounded-md text-[10px] font-bold bg-green-100 text-green-700 border-2 border-green-500';
+                } else {
+                    btn.className = 'btn-level flex-1 px-2 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300';
+                }
+            });
+
+            document.getElementById('levelDesc').innerText = levelDescriptions[language][level - 1];
+            
+            // Adjust allowed minutes based on level
+            snapToLevel(level);
+            updateDisplay();
+        }
+
+        function snapToLevel(level) {
+            const m = currentMinutes % 60;
+            
+            if (level === 1) {
+                // Only full hours
+                currentMinutes = Math.floor(currentMinutes / 60) * 60;
+            } else if (level === 2) {
+                // Full hours + 30
+                if (m !== 0 && m !== 30) {
+                    currentMinutes = Math.floor(currentMinutes / 60) * 60 + (m < 30 ? 0 : 30);
+                }
+            } else if (level === 3) {
+                // 0, 15, 30, 45
+                const snaps = [0, 15, 30, 45];
+                const closest = snaps.reduce((prev, curr) => 
+                    Math.abs(curr - m) < Math.abs(prev - m) ? curr : prev
+                );
+                currentMinutes = Math.floor(currentMinutes / 60) * 60 + closest;
+            }
+            // Level 4 allows all minutes
+        }
 
         function setLanguage(lang) {
             language = lang;
@@ -314,7 +562,17 @@
                     btn.className = 'btn-lang px-3 py-1.5 rounded-full font-bold text-[9px] md:text-[10px] bg-slate-200 text-slate-600';
                 }
             });
+            document.getElementById('levelDesc').innerText = levelDescriptions[lang][currentLevel - 1];
             updateDisplay();
+        }
+
+        function playAudio() {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(document.getElementById('timeWordsMain').innerText);
+                utterance.lang = language === 'fi' ? 'fi-FI' : language === 'en' ? 'en-US' : 'tr-TR';
+                utterance.rate = 0.8; // Slower for learning
+                speechSynthesis.speak(utterance);
+            }
         }
 
         function drawClock() {
@@ -323,32 +581,36 @@
             const h = Math.floor(currentMinutes / 60) % 12;
             const mAngleRad = (m * 6 - 90) * (Math.PI / 180);
 
-            // 1. Dış Ring
-            ctx.beginPath();
-            ctx.lineWidth = 45; 
-            ctx.lineCap = 'butt';
-            ctx.strokeStyle = '#34d399'; 
-            ctx.arc(centerX, centerY, ringRadius, -Math.PI / 2, mAngleRad, false);
-            ctx.stroke();
+            // Show rings based on level
+            if (currentLevel >= 2) {
+                // Green ring (past)
+                ctx.beginPath();
+                ctx.lineWidth = 45; 
+                ctx.lineCap = 'butt';
+                ctx.strokeStyle = '#34d399'; 
+                ctx.arc(centerX, centerY, ringRadius, -Math.PI / 2, mAngleRad, false);
+                ctx.stroke();
 
-            ctx.beginPath();
-            ctx.strokeStyle = '#fb7185'; 
-            ctx.arc(centerX, centerY, ringRadius, mAngleRad, 1.5 * Math.PI, false);
-            ctx.stroke();
+                // Red ring (to)
+                ctx.beginPath();
+                ctx.strokeStyle = '#fb7185'; 
+                ctx.arc(centerX, centerY, ringRadius, mAngleRad, 1.5 * Math.PI, false);
+                ctx.stroke();
 
-            // Ring ayırıcı
-            ctx.beginPath();
-            ctx.lineWidth = 6;
-            ctx.strokeStyle = 'white';
-            ctx.moveTo(centerX, centerY - ringRadius - 25); 
-            ctx.lineTo(centerX, centerY - ringRadius + 25);
-            ctx.stroke();
+                // Top marker
+                ctx.beginPath();
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = 'white';
+                ctx.moveTo(centerX, centerY - ringRadius - 25); 
+                ctx.lineTo(centerX, centerY - ringRadius + 25);
+                ctx.stroke();
 
-            // Ring üzerindeki sayılar
-            if (m > 2) drawTextOnRing(m.toString(), (-Math.PI/2 + mAngleRad)/2, ringRadius, '#064e3b');
-            if (m < 58) drawTextOnRing(((60-m)%60).toString(), (mAngleRad + 1.5*Math.PI)/2, ringRadius, '#881337');
+                // Ring numbers
+                if (m > 2) drawTextOnRing(m.toString(), (-Math.PI/2 + mAngleRad)/2, ringRadius, '#064e3b');
+                if (m < 58) drawTextOnRing(((60-m)%60).toString(), (mAngleRad + 1.5*Math.PI)/2, ringRadius, '#881337');
+            }
 
-            // 2. Saat Kadranı
+            // Clock face
             ctx.beginPath(); 
             ctx.arc(centerX, centerY, clockRadius, 0, 2 * Math.PI); 
             ctx.fillStyle = 'white'; 
@@ -357,17 +619,33 @@
             ctx.lineWidth = 4; 
             ctx.stroke();
 
-            // Saat Numaraları
+            // Numbers
             ctx.fillStyle = '#0f172a'; 
-            ctx.font = 'bold 26px Arial'; 
+            ctx.font = 'bold 28px Arial'; 
             ctx.textAlign = 'center'; 
             ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+            ctx.shadowBlur = 3;
             for (let i = 1; i <= 12; i++) {
                 const angle = (i * 30 - 90) * (Math.PI / 180);
                 ctx.fillText(i.toString(), centerX + (clockRadius - 35) * Math.cos(angle), centerY + (clockRadius - 35) * Math.sin(angle));
             }
+            ctx.shadowBlur = 0;
             
-            // Çizgiler
+            // Quarter markers (level 3+)
+            if (currentLevel >= 3) {
+                [15, 30, 45].forEach(min => {
+                    const angle = (min * 6 - 90) * (Math.PI / 180);
+                    ctx.beginPath();
+                    ctx.arc(centerX + clockRadius * 0.75 * Math.cos(angle), 
+                            centerY + clockRadius * 0.75 * Math.sin(angle), 
+                            6, 0, 2 * Math.PI);
+                    ctx.fillStyle = min === 15 || min === 45 ? '#f59e0b' : '#8b5cf6';
+                    ctx.fill();
+                });
+            }
+
+            // Tick marks
             for (let i = 0; i < 60; i++) {
                 const angle = (i * 6 - 90) * (Math.PI / 180);
                 const isBig = i % 5 === 0;
@@ -380,34 +658,35 @@
                 ctx.stroke();
             }
 
-            // 3. Akrep ve Yelkovan (İnce tasarım)
+            // Hands
             const hAngle = ((h + m/60) * 30 - 90) * (Math.PI/180);
             const yAngle = (m * 6 - 90) * (Math.PI/180);
             
-            // Akrep (saat ibresi) - kalın ve kısa
+            // Hour hand
             drawHand(hAngle, clockRadius * 0.55, 10, '#1e293b'); 
             
-            // Yelkovan (dakika ibresi) - ince ve uzun
-            drawHand(yAngle, clockRadius * 0.85, 4, '#4f46e5');  
-            
-            // Yelkovan üzerinde tutuş halkası (ortasında belirgin nokta)
-            const gripX = centerX + (clockRadius * 0.42) * Math.cos(yAngle);
-            const gripY = centerY + (clockRadius * 0.42) * Math.sin(yAngle);
-            ctx.beginPath(); 
-            ctx.arc(gripX, gripY, 14, 0, 2 * Math.PI); 
-            ctx.fillStyle = '#818cf8'; 
-            ctx.fill();
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            
-            // İç halka (görsel detay)
-            ctx.beginPath(); 
-            ctx.arc(gripX, gripY, 6, 0, 2 * Math.PI); 
-            ctx.fillStyle = '#4f46e5'; 
-            ctx.fill();
+            // Minute hand (only show if level allows)
+            if (currentLevel >= 2) {
+                drawHand(yAngle, clockRadius * 0.85, 4, '#4f46e5');  
+                
+                // Grip circle on minute hand
+                const gripX = centerX + (clockRadius * 0.42) * Math.cos(yAngle);
+                const gripY = centerY + (clockRadius * 0.42) * Math.sin(yAngle);
+                ctx.beginPath(); 
+                ctx.arc(gripX, gripY, 14, 0, 2 * Math.PI); 
+                ctx.fillStyle = '#818cf8'; 
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                ctx.beginPath(); 
+                ctx.arc(gripX, gripY, 6, 0, 2 * Math.PI); 
+                ctx.fillStyle = '#4f46e5'; 
+                ctx.fill();
+            }
 
-            // Merkez Pin
+            // Center pin
             ctx.beginPath(); ctx.arc(centerX, centerY, 12, 0, 2 * Math.PI); ctx.fillStyle = '#1e293b'; ctx.fill();
             ctx.beginPath(); ctx.arc(centerX, centerY, 4, 0, 2 * Math.PI); ctx.fillStyle = 'white'; ctx.fill();
         }
@@ -435,23 +714,27 @@
             const m = currentMinutes % 60;
             const displayH = h === 0 ? 12 : h;
             
-            digitalClock.innerText = `${displayH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-            pastCounter.innerText = m.toString();
-            toCounter.innerText = ((60 - m) % 60).toString();
+            document.getElementById('digitalClock').innerText = `${displayH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+            document.getElementById('past-counter').innerText = m.toString();
+            document.getElementById('to-counter').innerText = ((60 - m) % 60).toString();
 
             const res = formatTimeWords(h, m);
             
-            timeWordsMain.innerText = res.main;
-            arabicMain.innerText = res.mainAr;
+            document.getElementById('timeWordsMain').innerText = res.main;
+            document.getElementById('arabicMain').innerText = res.mainAr;
 
-            if (res.alt) {
-                timeWordsAlt.innerText = res.alt;
-                arabicAlt.innerText = res.altAr;
-                connectorText.innerText = getConnector(language);
-                altSection.classList.remove('invisible');
+            if (res.alt && currentLevel >= 3) {
+                document.getElementById('timeWordsAlt').innerText = res.alt;
+                document.getElementById('arabicAlt').innerText = res.altAr;
+                document.getElementById('connectorText').innerText = getConnector(language);
+                document.getElementById('altSection').classList.remove('invisible');
             } else {
-                altSection.classList.add('invisible');
+                document.getElementById('altSection').classList.add('invisible');
             }
+
+            // Show/hide counters based on level
+            document.getElementById('countersSection').style.display = currentLevel >= 2 ? 'grid' : 'none';
+
             drawClock();
         }
 
@@ -505,6 +788,127 @@
             return res;
         }
 
+        // Quiz functions
+        function startQuiz() {
+            quizQuestions = generateQuizQuestions();
+            currentQuestionIndex = 0;
+            correctAnswers = 0;
+            
+            document.getElementById('quizOverlay').classList.add('active');
+            document.getElementById('quizComplete').classList.add('hidden');
+            document.getElementById('quizQuestion').classList.remove('hidden');
+            document.getElementById('quizResult').classList.add('hidden');
+            
+            showQuizQuestion();
+        }
+
+        function generateQuizQuestions() {
+            const questions = [];
+            const levels = [
+                [0, 60, 120, 180, 240], // Level 1: full hours
+                [30, 90, 150, 210, 270], // Level 2: half hours
+                [15, 45, 75, 105, 165], // Level 3: quarters
+                [23, 37, 52, 8, 44] // Level 4: random
+            ];
+            
+            // Pick 5 random times from current level
+            const levelTimes = levels[currentLevel - 1];
+            for (let i = 0; i < 5; i++) {
+                questions.push(levelTimes[i % levelTimes.length] + Math.floor(Math.random() * 12) * 60);
+            }
+            
+            return questions;
+        }
+
+        function showQuizQuestion() {
+            const targetTime = quizQuestions[currentQuestionIndex];
+            const h = Math.floor(targetTime / 60) % 12;
+            const m = targetTime % 60;
+            const displayH = h === 0 ? 12 : h;
+            
+            document.getElementById('quizTime').innerText = `${displayH}:${m.toString().padStart(2, '0')}`;
+            
+            const res = formatTimeWords(h, m);
+            document.getElementById('quizTimeAr').innerText = res.mainAr;
+            
+            document.getElementById('quizProgress').style.width = `${(currentQuestionIndex / 5) * 100}%`;
+        }
+
+        function checkQuizAnswer() {
+            const targetTime = quizQuestions[currentQuestionIndex];
+            const tolerance = currentLevel === 4 ? 2 : 0; // 2 minute tolerance for level 4
+            
+            const diff = Math.abs(currentMinutes - targetTime);
+            const isCorrect = diff <= tolerance;
+            
+            const resultDiv = document.getElementById('quizResult');
+            const resultText = resultDiv.querySelector('p');
+            
+            if (isCorrect) {
+                correctAnswers++;
+                resultDiv.className = 'mt-4 p-4 rounded-xl text-center bg-green-100 border-2 border-green-500';
+                resultText.innerHTML = '✅ <span class="text-green-800">Oikein! Hyvä työ!</span><br><span class="arabic text-green-600">صحيح! أحسنت!</span>';
+                createConfetti();
+            } else {
+                resultDiv.className = 'mt-4 p-4 rounded-xl text-center bg-red-100 border-2 border-red-500';
+                resultText.innerHTML = '❌ <span class="text-red-800">Väärin. Yritä uudelleen!</span><br><span class="arabic text-red-600">خطأ. حاول مرة أخرى!</span>';
+            }
+            
+            resultDiv.classList.remove('hidden');
+            document.getElementById('quizQuestion').style.opacity = '0.5';
+        }
+
+        function nextQuizQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex >= 5) {
+                showQuizComplete();
+            } else {
+                document.getElementById('quizResult').classList.add('hidden');
+                document.getElementById('quizQuestion').style.opacity = '1';
+                showQuizQuestion();
+            }
+        }
+
+        function showQuizComplete() {
+            document.getElementById('quizQuestion').classList.add('hidden');
+            document.getElementById('quizResult').classList.add('hidden');
+            document.getElementById('quizComplete').classList.remove('hidden');
+            document.getElementById('finalScore').innerText = correctAnswers;
+            
+            if (correctAnswers === 5) {
+                createConfetti(30);
+            }
+        }
+
+        function closeQuiz() {
+            document.getElementById('quizOverlay').classList.remove('active');
+            setMode('learn');
+        }
+
+        function createConfetti(count = 15) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = ['#f39c12', '#e74c3c', '#3498db', '#2ecc71', '#9b59b6'][Math.floor(Math.random() * 5)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 50);
+            }
+        }
+
+        function toggleTips() {
+            document.getElementById('tipsOverlay').classList.add('active');
+        }
+
+        function closeTips() {
+            document.getElementById('tipsOverlay').classList.remove('active');
+        }
+
+        // Interaction handlers
         function getMouseAngle(e) {
             const rect = canvas.getBoundingClientRect();
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
@@ -515,20 +919,37 @@
 
         function startDragging(e) {
             const angle = getMouseAngle(e);
-            const h = Math.floor(currentMinutes / 60) % 12; const m = currentMinutes % 60;
+            const h = Math.floor(currentMinutes / 60) % 12; 
+            const m = currentMinutes % 60;
             const diffM = Math.min(Math.abs(angle - m*6), 360 - Math.abs(angle - m*6));
             const diffH = Math.min(Math.abs(angle - (h*30 + m*0.5)), 360 - Math.abs(angle - (h*30 + m*0.5)));
-            if (diffM < diffH && diffM < 50) dragTarget = 'minute';
-            else if (diffH < 50) dragTarget = 'hour';
-            else dragTarget = diffM < diffH ? 'minute' : 'hour';
+            
+            if (currentLevel === 1) {
+                dragTarget = 'hour';
+            } else if (diffM < diffH && diffM < 50) {
+                dragTarget = 'minute';
+            } else if (diffH < 50) {
+                dragTarget = 'hour';
+            } else {
+                dragTarget = diffM < diffH ? 'minute' : 'hour';
+            }
         }
 
         function handleInteraction(e) {
-            if (!dragTarget) return; if (e.cancelable) e.preventDefault();
+            if (!dragTarget) return; 
+            if (e.cancelable) e.preventDefault();
             const angle = getMouseAngle(e);
-            let h = Math.floor(currentMinutes / 60) % 12; let m = currentMinutes % 60;
-            if (dragTarget === 'minute') { m = Math.round(angle / 6) % 60; currentMinutes = (h * 60) + m; }
-            else if (dragTarget === 'hour') { h = Math.floor(angle / 30) % 12; currentMinutes = (h * 60) + m; }
+            let h = Math.floor(currentMinutes / 60) % 12; 
+            let m = currentMinutes % 60;
+            
+            if (dragTarget === 'minute' && currentLevel >= 2) { 
+                m = Math.round(angle / 6) % 60; 
+                currentMinutes = (h * 60) + m; 
+                snapToLevel(currentLevel);
+            } else if (dragTarget === 'hour') { 
+                h = Math.floor(angle / 30) % 12; 
+                currentMinutes = (h * 60) + m; 
+            }
             updateDisplay();
         }
 
@@ -539,6 +960,16 @@
         window.addEventListener('touchend', () => dragTarget = null);
         window.addEventListener('touchmove', handleInteraction, { passive: false });
 
+        // Close overlays on background click
+        document.getElementById('quizOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'quizOverlay') closeQuiz();
+        });
+
+        document.getElementById('tipsOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'tipsOverlay') closeTips();
+        });
+
+        // Initialize
         updateDisplay();
     </script>
 </body>
