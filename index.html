@@ -8,30 +8,52 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
         
-        :root {
-            --emerald-soft: #ecfdf5;
-            --rose-soft: #fff1f2;
-        }
-
         body {
-            background-color: #f1f5f9;
+            background-color: #f8fafc;
             touch-action: none; 
             font-family: 'Plus Jakarta Sans', 'Noto Sans Arabic', sans-serif;
-            overflow: hidden; /* Mobile single page fit */
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .control-panel {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-            max-height: 98vh;
+        .main-container {
+            height: 100dvh; 
+            width: 100%;
+            max-width: 600px;
             display: flex;
             flex-direction: column;
+            padding: 0.5rem;
+            box-sizing: border-box;
+            background: white;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            flex-shrink: 0;
+            margin-bottom: 0.25rem;
+        }
+
+        .clock-section {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 0; 
+            overflow: hidden;
         }
 
         #clockCanvas {
-            cursor: pointer;
             max-width: 100%;
+            max-height: 32vh; 
             height: auto;
+            cursor: pointer;
             touch-action: none;
+            flex-shrink: 1;
         }
 
         .arabic {
@@ -39,130 +61,122 @@
             font-family: 'Noto Sans Arabic', sans-serif;
         }
 
-        /* Custom scrollbar for small mobile heights if needed */
-        .content-scroll {
-            scrollbar-width: thin;
-            overflow-y: auto;
+        .footer-section {
+            flex-shrink: 0;
+            padding-top: 0.25rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        .btn-lang {
+            transition: all 0.2s ease;
+        }
+
+        /* Sabit yükseklik ve yerleşimi korumak için stil */
+        .alt-reading-block {
+            min-height: 85px; /* İkinci okunuşun kapladığı alanı sabitler */
+        }
+
+        @media (max-height: 650px) {
+            .text-xl { font-size: 1rem; }
+            .text-lg { font-size: 0.875rem; }
+            .p-3 { padding: 0.35rem; }
+            #clockCanvas { max-height: 28vh; }
+            .alt-reading-block { min-height: 70px; }
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-2 md:p-4">
+<body>
 
-    <div class="bg-white p-4 md:p-8 rounded-[2rem] control-panel w-full max-w-2xl text-center border border-slate-100">
+    <div class="main-container md:rounded-[3rem] border border-slate-100">
         
-        <!-- Header Section -->
-        <header class="mb-4">
-            <h1 id="title" class="text-xl md:text-2xl font-bold text-slate-800 flex flex-col md:flex-row items-center justify-center gap-1 md:gap-3">
-                <span>Opi kellonajat</span>
-                <span class="text-indigo-500 font-medium text-lg arabic">(تعلم الأوقات)</span>
+        <!-- Üst Bölüm: Başlık ve Hatırlatıcı -->
+        <div class="text-center header-content">
+            <h1 class="text-base md:text-lg font-bold text-slate-800 leading-tight">
+                Opi kellonajat <span class="text-indigo-600 font-normal arabic ml-1">(تعلم الأوقات)</span>
             </h1>
-            
-            <!-- Language Selection -->
-            <div class="flex flex-wrap justify-center gap-2 mt-4">
-                <button onclick="setLanguage('fi')" id="btn-fi" class="px-4 py-1.5 rounded-xl font-semibold transition-all text-sm bg-indigo-600 text-white shadow-md shadow-indigo-100">Suomi (فنلندي)</button>
-                <button onclick="setLanguage('en')" id="btn-en" class="px-4 py-1.5 rounded-xl font-semibold transition-all text-sm bg-slate-100 text-slate-600">English (إنجليزي)</button>
-                <button onclick="setLanguage('tr')" id="btn-tr" class="px-4 py-1.5 rounded-xl font-semibold transition-all text-sm bg-slate-100 text-slate-600">Türkçe (تركي)</button>
+            <div class="bg-indigo-50 border border-indigo-100 text-indigo-700 py-0.5 px-3 mt-1 rounded-lg inline-block shadow-sm">
+                <p class="text-[10px] md:text-xs font-bold">🕒 1 tunti = 60 minuuttia <span class="arabic font-normal ml-1">(ساعة = 60 دقيقة)</span></p>
             </div>
-        </header>
-
-        <!-- Knowledge Banner -->
-        <div class="bg-indigo-50 border border-indigo-100 text-indigo-700 p-2 md:p-3 mb-4 rounded-2xl flex flex-col items-center">
-            <p class="text-base md:text-lg font-bold flex items-center gap-2">
-                <span class="text-xl">🕒</span> 1 tunti = 60 minuuttia
-            </p>
-            <p class="arabic text-sm font-medium opacity-80">
-                (ساعة واحدة = 60 دقيقة)
-            </p>
         </div>
 
-        <!-- Main Content Area -->
-        <div class="content-scroll flex-1">
-            <!-- Clock Visualization -->
-            <div class="relative inline-block mb-2 scale-90 md:scale-100 transition-transform origin-top">
-                <canvas id="clockCanvas" width="480" height="480"></canvas>
-            </div>
-
-            <!-- Time Display Box -->
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-inner mb-4">
-                <div id="digitalClock" class="text-4xl md:text-5xl font-mono font-bold text-indigo-600 tracking-widest mb-3">
+        <!-- Saat ve Okunuşların Olduğu Ana Alan -->
+        <div class="clock-section">
+            <canvas id="clockCanvas" width="500" height="500" class="mb-1"></canvas>
+            
+            <!-- Okunuş Paneli -->
+            <div class="w-full bg-slate-50 p-2 md:p-3 rounded-2xl border border-slate-100 shadow-inner">
+                <div id="digitalClock" class="text-2xl md:text-3xl font-mono font-bold text-indigo-600 tracking-widest text-center mb-1">
                     12:00
                 </div>
                 
-                <!-- Time Descriptions -->
-                <div class="grid grid-cols-1 gap-4">
-                    <!-- Way 1 -->
-                    <div class="bg-white p-3 rounded-xl border border-slate-200/60 shadow-sm">
-                        <div id="timeWordsMain" class="text-lg md:text-xl font-bold text-slate-800 italic">
+                <div class="flex flex-col gap-1.5">
+                    <!-- Birinci Okunuş Yolu -->
+                    <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-200/50 text-center">
+                        <div id="timeWordsMain" class="text-sm md:text-lg font-bold text-slate-800 italic leading-tight">
                             Kello on kaksitoista
                         </div>
-                        <div id="arabicMain" class="text-base md:text-lg text-indigo-600 font-semibold arabic mt-1">
+                        <div id="arabicMain" class="text-xs md:text-base text-indigo-500 font-semibold arabic mt-0.5">
                             الساعة هي الثانية عشرة
                         </div>
                     </div>
 
-                    <!-- Way 2 (Hidden if not applicable) -->
-                    <div id="altSection" class="hidden">
-                        <div class="flex items-center justify-center gap-2 mb-2">
-                            <div class="h-[1px] bg-slate-200 flex-1"></div>
-                            <div class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
-                                <span id="connectorText">tai voimme sanoa</span>
-                                <span class="arabic ml-1">(أو يمكننا القول)</span>
-                            </div>
-                            <div class="h-[1px] bg-slate-200 flex-1"></div>
+                    <!-- "Veya şöyle diyebiliriz" Bölümü (Alanı her zaman korur) -->
+                    <div id="altSection" class="invisible alt-reading-block">
+                        <div class="text-[8px] md:text-[9px] uppercase text-slate-400 font-bold mb-0.5 text-center flex items-center justify-center gap-1">
+                            <hr class="flex-grow border-slate-200">
+                            <span><span id="connectorText">tai voimme sanoa</span> <span class="arabic ml-0.5">(أو يمكننا القول)</span></span>
+                            <hr class="flex-grow border-slate-200">
                         </div>
-                        <div class="bg-white p-3 rounded-xl border border-slate-200/60 shadow-sm">
-                            <div id="timeWordsAlt" class="text-lg md:text-xl font-bold text-slate-800 italic">
+                        <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-200/50 text-center">
+                            <div id="timeWordsAlt" class="text-sm md:text-lg font-bold text-slate-800 italic leading-tight">
                                 -
                             </div>
-                            <div id="arabicAlt" class="text-base md:text-lg text-indigo-600 font-semibold arabic mt-1">
+                            <div id="arabicAlt" class="text-xs md:text-base text-indigo-500 font-semibold arabic mt-0.5">
                                 -
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Visual Legend (Past/To Counters) -->
-            <div class="flex justify-center gap-4 md:gap-12 mb-2">
-                <div class="flex flex-col items-center bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-100 min-w-[100px]">
-                    <div class="flex items-center gap-2 mb-1">
-                        <div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
-                        <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-tighter">Yli / Past / Geçe</span>
-                    </div>
-                    <div id="past-counter" class="text-emerald-600 text-lg font-black tracking-tight leading-none">0 min</div>
-                    <span class="arabic text-[10px] text-emerald-700 font-bold mt-1">(بعد)</span>
-                </div>
-                
-                <div class="flex flex-col items-center bg-rose-50 px-4 py-2 rounded-2xl border border-rose-100 min-w-[100px]">
-                    <div class="flex items-center gap-2 mb-1">
-                        <div class="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
-                        <span class="text-[10px] font-bold text-rose-800 uppercase tracking-tighter">Vaille / To / Kala</span>
-                    </div>
-                    <div id="to-counter" class="text-rose-600 text-lg font-black tracking-tight leading-none">60 min</div>
-                    <span class="arabic text-[10px] text-rose-700 font-bold mt-1">(إلا)</span>
                 </div>
             </div>
         </div>
 
-        <footer class="mt-2 text-[10px] md:text-xs text-slate-400 font-medium">
-            Liikuta viisareita • Move the hands • <span class="arabic">(حرك عقارب الساعة)</span>
-        </footer>
+        <!-- Alt Bölüm: Göstergeler ve Dil Butonları -->
+        <div class="footer-section">
+            <!-- Dakika Sayaçları -->
+            <div class="flex justify-center gap-3 md:gap-6 mb-2">
+                <div class="bg-emerald-50 px-2 md:px-4 py-1 rounded-xl border border-emerald-100 text-center min-w-[80px] md:min-w-[110px]">
+                    <span class="text-[8px] md:text-[9px] font-bold text-emerald-800 uppercase block tracking-tight">Yli / Past / Geçe</span>
+                    <div id="past-counter" class="text-emerald-600 text-sm md:text-base font-black leading-none">0 min</div>
+                    <span class="arabic text-[8px] md:text-[9px] text-emerald-700 font-bold">(بعد)</span>
+                </div>
+                <div class="bg-rose-50 px-2 md:px-4 py-1 rounded-xl border border-rose-100 text-center min-w-[80px] md:min-w-[110px]">
+                    <span class="text-[8px] md:text-[9px] font-bold text-rose-800 uppercase block tracking-tight">Vaille / To / Kala</span>
+                    <div id="to-counter" class="text-rose-600 text-sm md:text-base font-black leading-none">60 min</div>
+                    <span class="arabic text-[8px] md:text-[9px] text-rose-700 font-bold">(إلا)</span>
+                </div>
+            </div>
+
+            <!-- Dil Seçimi -->
+            <div class="flex flex-wrap justify-center gap-2 pb-0.5">
+                <button onclick="setLanguage('fi')" id="btn-fi" class="btn-lang px-3 md:px-5 py-1 md:py-1.5 rounded-full font-bold text-[10px] md:text-xs bg-indigo-600 text-white shadow-md">Suomi (فنلندي)</button>
+                <button onclick="setLanguage('en')" id="btn-en" class="btn-lang px-3 md:px-5 py-1 md:py-1.5 rounded-full font-bold text-[10px] md:text-xs bg-slate-100 text-slate-600">English (إنجليزي)</button>
+                <button onclick="setLanguage('tr')" id="btn-tr" class="btn-lang px-3 md:px-5 py-1 md:py-1.5 rounded-full font-bold text-[10px] md:text-xs bg-slate-100 text-slate-600">Türkçe (تركي)</button>
+            </div>
+        </div>
     </div>
 
     <script>
         const canvas = document.getElementById('clockCanvas');
         const ctx = canvas.getContext('2d');
         const digitalClock = document.getElementById('digitalClock');
-        
         const timeWordsMain = document.getElementById('timeWordsMain');
         const arabicMain = document.getElementById('arabicMain');
         const timeWordsAlt = document.getElementById('timeWordsAlt');
         const arabicAlt = document.getElementById('arabicAlt');
         const altSection = document.getElementById('altSection');
-        const connectorText = document.getElementById('connectorText');
-
         const pastCounter = document.getElementById('past-counter');
         const toCounter = document.getElementById('to-counter');
+        const connectorText = document.getElementById('connectorText');
         
         let language = 'fi';
         let currentMinutes = 0; 
@@ -170,19 +184,16 @@
         
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const clockRadius = 145; // Slightly reduced for better mobile breathing room
-        const ringRadius = 195;
+        const clockRadius = 145; 
+        const ringRadius = 205; 
 
         function setLanguage(lang) {
             language = lang;
-            const buttons = ['fi', 'en', 'tr'];
-            buttons.forEach(b => {
+            ['fi', 'en', 'tr'].forEach(b => {
                 const btn = document.getElementById(`btn-${b}`);
-                if (b === lang) {
-                    btn.className = 'px-4 py-1.5 rounded-xl font-semibold transition-all text-sm bg-indigo-600 text-white shadow-md shadow-indigo-100';
-                } else {
-                    btn.className = 'px-4 py-1.5 rounded-xl font-semibold transition-all text-sm bg-slate-100 text-slate-600';
-                }
+                btn.className = b === lang ? 
+                    'btn-lang px-3 md:px-5 py-1 md:py-1.5 rounded-full font-bold text-[10px] md:text-xs bg-indigo-600 text-white shadow-md' : 
+                    'btn-lang px-3 md:px-5 py-1 md:py-1.5 rounded-full font-bold text-[10px] md:text-xs bg-slate-100 text-slate-600';
             });
             updateDisplay();
         }
@@ -191,15 +202,14 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const m = currentMinutes % 60;
             const h = Math.floor(currentMinutes / 60) % 12;
-            const startAngle = -Math.PI / 2;
             const mAngleRad = (m * 6 - 90) * (Math.PI / 180);
 
             // 1. Ring Visuals
             ctx.beginPath();
-            ctx.lineWidth = 40; // Thicker ring for better visibility
+            ctx.lineWidth = 45; 
             ctx.lineCap = 'butt';
             ctx.strokeStyle = '#34d399'; 
-            ctx.arc(centerX, centerY, ringRadius, startAngle, mAngleRad, false);
+            ctx.arc(centerX, centerY, ringRadius, -Math.PI / 2, mAngleRad, false);
             ctx.stroke();
 
             ctx.beginPath();
@@ -207,101 +217,77 @@
             ctx.arc(centerX, centerY, ringRadius, mAngleRad, 1.5 * Math.PI, false);
             ctx.stroke();
 
-            // Separators
+            // Ring separator
             ctx.beginPath();
             ctx.lineWidth = 6;
             ctx.strokeStyle = 'white';
-            ctx.moveTo(centerX, centerY - ringRadius - 20);
-            ctx.lineTo(centerX, centerY - ringRadius + 20);
+            ctx.moveTo(centerX, centerY - ringRadius - 25); 
+            ctx.lineTo(centerX, centerY - ringRadius + 25);
             ctx.stroke();
 
-            // Ring Numbers (Bolder & Larger)
-            if (m > 2) { 
-                const pastMidAngle = (startAngle + mAngleRad) / 2;
-                drawTextOnRing(m.toString(), pastMidAngle, ringRadius, '#064e3b');
-            }
-            if (m < 58) {
-                const toMidAngle = (mAngleRad + 1.5 * Math.PI) / 2;
-                drawTextOnRing(((60 - m) % 60).toString(), toMidAngle, ringRadius, '#881337');
-            }
+            // Ring numbers
+            if (m > 2) drawTextOnRing(m.toString(), (-Math.PI/2 + mAngleRad)/2, ringRadius, '#064e3b');
+            if (m < 58) drawTextOnRing(((60-m)%60).toString(), (mAngleRad + 1.5*Math.PI)/2, ringRadius, '#881337');
 
-            // 2. Face
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, clockRadius, 0, 2 * Math.PI);
-            ctx.fillStyle = 'white';
+            // 2. Clock Face
+            ctx.beginPath(); 
+            ctx.arc(centerX, centerY, clockRadius, 0, 2 * Math.PI); 
+            ctx.fillStyle = 'white'; 
             ctx.fill();
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#334155'; 
+            ctx.lineWidth = 4; 
             ctx.stroke();
 
             // Face Numbers
-            ctx.fillStyle = '#0f172a';
-            ctx.font = 'bold 26px Arial';
-            ctx.textAlign = 'center';
+            ctx.fillStyle = '#0f172a'; 
+            ctx.font = 'bold 26px Arial'; 
+            ctx.textAlign = 'center'; 
             ctx.textBaseline = 'middle';
             for (let i = 1; i <= 12; i++) {
                 const angle = (i * 30 - 90) * (Math.PI / 180);
-                const x = centerX + (clockRadius - 32) * Math.cos(angle);
-                const y = centerY + (clockRadius - 32) * Math.sin(angle);
-                ctx.fillText(i.toString(), x, y);
+                ctx.fillText(i.toString(), centerX + (clockRadius - 35) * Math.cos(angle), centerY + (clockRadius - 35) * Math.sin(angle));
             }
-
-            // High-Visibility Ticks
+            
+            // Ticks
             for (let i = 0; i < 60; i++) {
                 const angle = (i * 6 - 90) * (Math.PI / 180);
                 const isBig = i % 5 === 0;
-                const startR = isBig ? clockRadius - 16 : clockRadius - 8;
-                const x1 = centerX + startR * Math.cos(angle);
-                const y1 = centerY + startR * Math.sin(angle);
-                const x2 = centerX + clockRadius * Math.cos(angle);
-                const y2 = centerY + clockRadius * Math.sin(angle);
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
+                ctx.beginPath(); 
+                ctx.lineWidth = isBig ? 4 : 2; 
                 ctx.strokeStyle = isBig ? '#0f172a' : '#cbd5e1';
-                ctx.lineWidth = isBig ? 3 : 1.5;
+                const startDist = isBig ? clockRadius - 18 : clockRadius - 10;
+                ctx.moveTo(centerX + startDist * Math.cos(angle), centerY + startDist * Math.sin(angle));
+                ctx.lineTo(centerX + clockRadius * Math.cos(angle), centerY + clockRadius * Math.sin(angle)); 
                 ctx.stroke();
             }
 
             // 3. Hands
-            const hAngle = ((h + m / 60) * 30 - 90) * (Math.PI / 180);
-            drawHand(hAngle, clockRadius * 0.55, 14, '#1e293b'); // Hour
-            const mAngle = (m * 6 - 90) * (Math.PI / 180);
-            drawHand(mAngle, clockRadius * 0.85, 8, '#4f46e5'); // Minute
+            const hAngle = ((h + m/60) * 30 - 90) * (Math.PI/180);
+            const yAngle = (m * 6 - 90) * (Math.PI/180);
+            
+            drawHand(hAngle, clockRadius * 0.55, 14, '#1e293b'); 
+            drawHand(yAngle, clockRadius * 0.85, 8, '#4f46e5');  
 
-            // Center
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 12, 0, 2 * Math.PI);
-            ctx.fillStyle = '#1e293b';
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 4, 0, 2 * Math.PI);
-            ctx.fillStyle = '#fff';
-            ctx.fill();
+            // Center Pin
+            ctx.beginPath(); ctx.arc(centerX, centerY, 12, 0, 2 * Math.PI); ctx.fillStyle = '#1e293b'; ctx.fill();
+            ctx.beginPath(); ctx.arc(centerX, centerY, 4, 0, 2 * Math.PI); ctx.fillStyle = 'white'; ctx.fill();
         }
 
         function drawTextOnRing(text, angleRad, radius, color) {
             const x = centerX + radius * Math.cos(angleRad);
             const y = centerY + radius * Math.sin(angleRad);
-            ctx.fillStyle = color;
-            ctx.font = '900 32px sans-serif'; // Maximum visibility for tablet
-            ctx.textAlign = 'center';
+            ctx.fillStyle = color; 
+            ctx.font = '900 32px sans-serif'; 
+            ctx.textAlign = 'center'; 
             ctx.textBaseline = 'middle';
-            
-            // Text shadow for legibility
-            ctx.shadowBlur = 4;
-            ctx.shadowColor = "rgba(255,255,255,0.8)";
-            ctx.fillText(text, x, y);
+            ctx.shadowBlur = 4; ctx.shadowColor = "rgba(255,255,255,0.8)";
+            ctx.fillText(text, x, y); 
             ctx.shadowBlur = 0;
         }
 
         function drawHand(angle, length, width, color) {
-            ctx.beginPath();
-            ctx.lineCap = 'round';
-            ctx.lineWidth = width;
-            ctx.strokeStyle = color;
-            ctx.moveTo(centerX, centerY);
-            ctx.lineTo(centerX + length * Math.cos(angle), centerY + length * Math.sin(angle));
+            ctx.beginPath(); ctx.lineCap = 'round'; ctx.lineWidth = width; ctx.strokeStyle = color;
+            ctx.moveTo(centerX, centerY); ctx.lineTo(centerX + length * Math.cos(angle), centerY + length * Math.sin(angle));
             ctx.stroke();
         }
 
@@ -315,6 +301,7 @@
             toCounter.innerText = `${(60 - m) % 60} min`;
 
             const res = formatTimeWords(h, m);
+            
             timeWordsMain.innerText = res.main;
             arabicMain.innerText = res.mainAr;
 
@@ -322,11 +309,10 @@
                 timeWordsAlt.innerText = res.alt;
                 arabicAlt.innerText = res.altAr;
                 connectorText.innerText = getConnector(language);
-                altSection.classList.remove('hidden');
+                altSection.classList.remove('invisible');
             } else {
-                altSection.classList.add('hidden');
+                altSection.classList.add('invisible');
             }
-            
             drawClock();
         }
 
@@ -348,80 +334,34 @@
             let res = { main: "", mainAr: "", alt: "", altAr: "" };
 
             if (language === 'fi') {
-                if (m === 0) {
-                    res.main = `Kello on ${fiNums[curH]}`;
-                    res.mainAr = `الساعة هي ${arNums[curH]} تماماً`;
-                } else if (m === 30) {
-                    res.main = `Kello on puoli ${fiNums[nextH]}`;
-                    res.mainAr = `الساعة هي ${arNums[curH]} والنصف`;
-                } else if (m === 15) {
-                    res.main = `Kello on varttia yli ${fiNums[curH]}`;
-                    res.mainAr = `الساعة هي ${arNums[curH]} والربع`;
-                    res.alt = `Kello on viisitoista yli ${fiNums[curH]}`;
-                    res.altAr = `الساعة هي ${arNums[curH]} وخمس عشرة دقيقة`;
-                } else if (m === 45) {
-                    res.main = `Kello on varttia vaille ${fiNums[nextH]}`;
-                    res.mainAr = `الساعة هي ${arNums[nextH]} إلا الربع`;
-                    res.alt = `Kello on viisitoista vaille ${fiNums[nextH]}`;
-                    res.altAr = `الساعة هي ${arNums[nextH]} إلا خمس عشرة دقيقة`;
-                } else if (m < 30) {
-                    res.main = `Kello on ${m} yli ${fiNums[curH]}`;
-                    res.mainAr = `الساعة هي ${arNums[curH]} و ${m} دقيقة`;
-                } else {
-                    res.main = `Kello on ${60 - m} vaille ${fiNums[nextH]}`;
-                    res.mainAr = `الساعة هي ${arNums[nextH]} إلا ${60 - m} دقيقة`;
+                if (m === 0) { res.main = `Kello on ${fiNums[curH]}`; res.mainAr = `الساعة هي ${arNums[curH]} تماماً`; }
+                else if (m === 30) { res.main = `Kello on puoli ${fiNums[nextH]}`; res.mainAr = `الساعة هي ${arNums[curH]} والنصف`; }
+                else if (m === 15) { 
+                    res.main = `Kello on varttia yli ${fiNums[curH]}`; res.mainAr = `الساعة هي ${arNums[curH]} والربع`; 
+                    res.alt = `Kello on viisitoista yli ${fiNums[curH]}`; res.altAr = `الساعة هي ${arNums[curH]} وخمس عشرة دقيقة`;
                 }
+                else if (m === 45) { 
+                    res.main = `Kello on varttia vaille ${fiNums[nextH]}`; res.mainAr = `الساعة هي ${arNums[nextH]} إلا الربع`; 
+                    res.alt = `Kello on viisitoista vaille ${fiNums[nextH]}`; res.altAr = `الساعة هي ${arNums[nextH]} إلا خمس عشرة دقيقة`;
+                }
+                else if (m < 30) { res.main = `Kello on ${m} yli ${fiNums[curH]}`; res.mainAr = `الساعة هي ${arNums[curH]} و ${m} دقيقة`; }
+                else { res.main = `Kello on ${60 - m} vaille ${fiNums[nextH]}`; res.mainAr = `الساعة هي ${arNums[nextH]} إلا ${60 - m} دقيقة`; }
             } else if (language === 'en') {
-                if (m === 0) {
-                    res.main = `It's ${enNums[curH]} o'clock`;
-                    res.mainAr = `الساعة هي ${arNums[curH]} تماماً`;
-                } else if (m === 15) {
-                    res.main = `It's quarter past ${enNums[curH]}`;
-                    res.mainAr = `الساعة هي ${arNums[curH]} والربع`;
-                    res.alt = `It's fifteen minutes past ${enNums[curH]}`;
-                    res.altAr = `الساعة هي ${arNums[curH]} وخمس عشرة دقيقة`;
-                } else if (m === 30) {
-                    res.main = `It's half past ${enNums[curH]}`;
-                    res.mainAr = `الساعة هي ${arNums[curH]} والنصف`;
-                } else if (m === 45) {
-                    res.main = `It's quarter to ${enNums[nextH]}`;
-                    res.mainAr = `الساعة هي ${arNums[nextH]} إلا الربع`;
-                    res.alt = `It's fifteen minutes to ${enNums[nextH]}`;
-                    res.altAr = `الساعة هي ${arNums[nextH]} إلا خمس عشرة دقيقة`;
-                } else if (m < 30) {
-                    res.main = `It's ${m} minutes past ${enNums[curH]}`;
-                    res.mainAr = `الساعة هي ${arNums[curH]} و ${m} دقيقة`;
-                } else {
-                    res.main = `It's ${60 - m} minutes to ${enNums[nextH]}`;
-                    res.mainAr = `الساعة هي ${arNums[nextH]} إلا ${60 - m} دقيقة`;
-                }
+                if (m === 0) { res.main = `It's ${enNums[curH]} o'clock`; res.mainAr = `الساعة هي ${arNums[curH]} تماماً`; }
+                else if (m === 15) { res.main = `It's quarter past ${enNums[curH]}`; res.mainAr = `الساعة هي ${arNums[curH]} والربع`; res.alt = `It's fifteen minutes past ${enNums[curH]}`; res.altAr = `الساعة هي ${arNums[curH]} وخمس عشرة دقيقة`; }
+                else if (m === 30) { res.main = `It's half past ${enNums[curH]}`; res.mainAr = `الساعة هي ${arNums[curH]} والنصف`; }
+                else if (m === 45) { res.main = `It's quarter to ${enNums[nextH]}`; res.mainAr = `الساعة هي ${arNums[nextH]} إلا الربع`; res.alt = `It's fifteen minutes to ${enNums[nextH]}`; res.altAr = `الساعة هي ${arNums[nextH]} إلا خمس عشرة دقيقة`; }
+                else if (m < 30) { res.main = `It's ${m} minutes past ${enNums[curH]}`; res.mainAr = `الساعة هي ${arNums[curH]} و ${m} دقيقة`; }
+                else { res.main = `It's ${60 - m} minutes to ${enNums[nextH]}`; res.mainAr = `الساعة هي ${arNums[nextH]} إلا ${60 - m} دقيقة`; }
             } else if (language === 'tr') {
-                const trAccusative = ["on ikiyi", "biri", "ikiyi", "üçü", "dördü", "beşi", "altıyı", "yediyi", "sekizi", "dokuzu", "onu", "on biri", "on ikiyi"];
-                const trDative = ["on ikiye", "bire", "ikiye", "üçe", "dörde", "beşe", "altıya", "yediye", "sekize", "dokuza", "ona", "on bire", "on ikiye"];
-                
-                if (m === 0) {
-                    res.main = `Saat ${trNums[curH]}`;
-                    res.mainAr = `الساعة هي ${arNums[curH]} تماماً`;
-                } else if (m === 30) {
-                    res.main = `Saat ${trNums[curH]} buçuk`;
-                    res.mainAr = `الساعة هي ${arNums[curH]} والنصف`;
-                } else if (m === 15) {
-                    res.main = `Saat ${trAccusative[curH]} çeyrek geçiyor`;
-                    res.mainAr = `الساعة هي ${arNums[curH]} والربع`;
-                    res.alt = `Saat ${trAccusative[curH]} on beş geçiyor`;
-                    res.altAr = `الساعة هي ${arNums[curH]} وخمس عشرة دقيقة`;
-                } else if (m === 45) {
-                    res.main = `Saat ${trDative[nextH]} çeyrek var`;
-                    res.mainAr = `الساعة هي ${arNums[nextH]} إلا الربع`;
-                    res.alt = `Saat ${trDative[nextH]} on beş var`;
-                    res.altAr = `الساعة هي ${arNums[nextH]} إلا خمس عشرة دقيقة`;
-                } else if (m < 30) {
-                    res.main = `Saat ${trAccusative[curH]} ${m} geçiyor`;
-                    res.mainAr = `الساعة هي ${arNums[curH]} و ${m} دقيقة`;
-                } else {
-                    res.main = `Saat ${trDative[nextH]} ${60 - m} var`;
-                    res.mainAr = `الساعة هي ${arNums[nextH]} إلا ${60 - m} دقيقة`;
-                }
+                const trAcc = ["on ikiyi", "biri", "ikiyi", "üçü", "dördü", "beşi", "altıyı", "yediyi", "sekizi", "dokuzu", "onu", "on biri", "on ikiyi"];
+                const trDat = ["on ikiye", "bire", "ikiye", "üçe", "dörde", "beşe", "altıya", "yediye", "sekize", "dokuza", "ona", "on bire", "on ikiye"];
+                if (m === 0) { res.main = `Saat ${trNums[curH]}`; res.mainAr = `الساعة هي ${arNums[curH]} تماماً`; }
+                else if (m === 30) { res.main = `Saat ${trNums[curH]} buçuk`; res.mainAr = `الساعة هي ${arNums[curH]} والنصف`; }
+                else if (m === 15) { res.main = `Saat ${trAcc[curH]} çeyrek geçiyor`; res.mainAr = `الساعة هي ${arNums[curH]} والربع`; res.alt = `Saat ${trAcc[curH]} on beş geçiyor`; res.altAr = `الساعة هي ${arNums[curH]} وخمس عشرة دقيقة`; }
+                else if (m === 45) { res.main = `Saat ${trDat[nextH]} çeyrek var`; res.mainAr = `الساعة هي ${arNums[nextH]} إلا الربع`; res.alt = `Saat ${trDat[nextH]} on beş var`; res.altAr = `الساعة هي ${arNums[nextH]} إلا خمس عشرة دقيقة`; }
+                else if (m < 30) { res.main = `Saat ${trAcc[curH]} ${m} geçiyor`; res.mainAr = `الساعة هي ${arNums[curH]} و ${m} دقيقة`; }
+                else { res.main = `Saat ${trDat[nextH]} ${60 - m} var`; res.mainAr = `الساعة هي ${arNums[nextH]} إلا ${60 - m} دقيقة`; }
             }
             return res;
         }
@@ -430,51 +370,35 @@
             const rect = canvas.getBoundingClientRect();
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
             const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            const x = clientX - rect.left;
-            const y = clientY - rect.top;
-            let angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI) + 90;
+            let angle = Math.atan2(clientY - (rect.top + rect.height/2), clientX - (rect.left + rect.width/2)) * (180 / Math.PI) + 90;
             return angle < 0 ? angle + 360 : angle;
         }
 
         function startDragging(e) {
             const angle = getMouseAngle(e);
-            const h = Math.floor(currentMinutes / 60) % 12;
-            const m = currentMinutes % 60;
-            const mAngle = (m * 6);
-            const hAngle = (h * 30 + m * 0.5);
-            const wrapDiffM = Math.min(Math.abs(angle - mAngle), 360 - Math.abs(angle - mAngle));
-            const wrapDiffH = Math.min(Math.abs(angle - hAngle), 360 - Math.abs(angle - hAngle));
-            
-            // Larger hit area for touch
-            if (wrapDiffM < 45) dragTarget = 'minute';
-            else if (wrapDiffH < 45) dragTarget = 'hour';
-            else dragTarget = wrapDiffM < wrapDiffH ? 'minute' : 'hour';
+            const h = Math.floor(currentMinutes / 60) % 12; const m = currentMinutes % 60;
+            const diffM = Math.min(Math.abs(angle - m*6), 360 - Math.abs(angle - m*6));
+            const diffH = Math.min(Math.abs(angle - (h*30 + m*0.5)), 360 - Math.abs(angle - (h*30 + m*0.5)));
+            if (diffM < diffH && diffM < 50) dragTarget = 'minute';
+            else if (diffH < 50) dragTarget = 'hour';
+            else dragTarget = diffM < diffH ? 'minute' : 'hour';
         }
 
         function handleInteraction(e) {
-            if (!dragTarget) return;
-            if (e.cancelable) e.preventDefault();
+            if (!dragTarget) return; if (e.cancelable) e.preventDefault();
             const angle = getMouseAngle(e);
-            let h = Math.floor(currentMinutes / 60) % 12;
-            let m = currentMinutes % 60;
-            if (dragTarget === 'minute') {
-                m = Math.round(angle / 6) % 60;
-                currentMinutes = (h * 60) + m;
-            } else if (dragTarget === 'hour') {
-                h = Math.floor(angle / 30) % 12;
-                currentMinutes = (h * 60) + m;
-            }
+            let h = Math.floor(currentMinutes / 60) % 12; let m = currentMinutes % 60;
+            if (dragTarget === 'minute') { m = Math.round(angle / 6) % 60; currentMinutes = (h * 60) + m; }
+            else if (dragTarget === 'hour') { h = Math.floor(angle / 30) % 12; currentMinutes = (h * 60) + m; }
             updateDisplay();
         }
 
-        function stopDragging() { dragTarget = null; }
-
-            canvas.addEventListener('mousedown', startDragging);
-            window.addEventListener('mouseup', stopDragging);
-            window.addEventListener('mousemove', handleInteraction);
-            canvas.addEventListener('touchstart', (e) => { startDragging(e); handleInteraction(e); }, { passive: false });
-            window.addEventListener('touchend', stopDragging);
-            window.addEventListener('touchmove', handleInteraction, { passive: false });
+        canvas.addEventListener('mousedown', startDragging);
+        window.addEventListener('mouseup', () => dragTarget = null);
+        window.addEventListener('mousemove', handleInteraction);
+        canvas.addEventListener('touchstart', (e) => { startDragging(e); handleInteraction(e); }, { passive: false });
+        window.addEventListener('touchend', () => dragTarget = null);
+        window.addEventListener('touchmove', handleInteraction, { passive: false });
 
         updateDisplay();
     </script>
