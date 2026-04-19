@@ -23,7 +23,7 @@
         .main-container {
             height: 100dvh; 
             width: 100%;
-            max-width: 600px;
+            max-width: 650px;
             display: flex;
             flex-direction: column;
             padding: 0.5rem;
@@ -47,7 +47,6 @@
             overflow: hidden;
         }
 
-        /* Saatin boyutu biraz artırıldı */
         #clockCanvas {
             max-width: 100%;
             max-height: 35vh; 
@@ -64,25 +63,26 @@
 
         .footer-section {
             flex-shrink: 0;
-            padding-top: 0.25rem;
+            padding-top: 0.5rem;
             border-top: 1px solid #f1f5f9;
+            width: 100%;
         }
         
         .btn-lang {
             transition: all 0.2s ease;
         }
 
-        /* Sabit yükseklik ve yerleşimi korumak için stil */
+        /* Sabit yükseklik bloğu - Çeyreklerde kadrann oynamasını kesinlikle durdurur */
         .alt-reading-block {
-            min-height: 85px; 
+            height: 80px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         @media (max-height: 650px) {
-            .text-xl { font-size: 1rem; }
-            .text-lg { font-size: 0.875rem; }
-            .p-3 { padding: 0.35rem; }
             #clockCanvas { max-height: 30vh; }
-            .alt-reading-block { min-height: 70px; }
+            .alt-reading-block { height: 65px; }
         }
     </style>
 </head>
@@ -121,19 +121,21 @@
                         </div>
                     </div>
 
-                    <!-- "Veya şöyle diyebiliriz" Bölümü (Alanı her zaman korur) -->
-                    <div id="altSection" class="invisible alt-reading-block">
-                        <div class="text-[8px] md:text-[9px] uppercase text-slate-400 font-bold mb-0.5 text-center flex items-center justify-center gap-1">
-                            <hr class="flex-grow border-slate-200">
-                            <span><span id="connectorText">tai voimme sanoa</span> <span class="arabic ml-0.5">(أو يمكننا القول)</span></span>
-                            <hr class="flex-grow border-slate-200">
-                        </div>
-                        <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-200/50 text-center">
-                            <div id="timeWordsAlt" class="text-sm md:text-lg font-bold text-slate-800 italic leading-tight">
-                                -
+                    <!-- "Veya şöyle diyebiliriz" Bölümü (Yüksekliği her zaman SABİT tutar) -->
+                    <div class="alt-reading-block">
+                        <div id="altSection" class="invisible">
+                            <div class="text-[8px] md:text-[9px] uppercase text-slate-400 font-bold mb-0.5 text-center flex items-center justify-center gap-1">
+                                <hr class="flex-grow border-slate-200">
+                                <span><span id="connectorText">tai voimme sanoa</span> <span class="arabic ml-0.5">(أو يمكننا القول)</span></span>
+                                <hr class="flex-grow border-slate-200">
                             </div>
-                            <div id="arabicAlt" class="text-xs md:text-base text-indigo-500 font-semibold arabic mt-0.5">
-                                -
+                            <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-200/50 text-center">
+                                <div id="timeWordsAlt" class="text-sm md:text-lg font-bold text-slate-800 italic leading-tight">
+                                    -
+                                </div>
+                                <div id="arabicAlt" class="text-xs md:text-base text-indigo-500 font-semibold arabic mt-0.5">
+                                    -
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -157,7 +159,7 @@
                 </div>
             </div>
 
-            <!-- Dil Seçimi -->
+            <!-- Dil Seçimi (İsteğin üzerine en alta alındı) -->
             <div class="flex flex-wrap justify-center gap-2 pb-0.5">
                 <button onclick="setLanguage('fi')" id="btn-fi" class="btn-lang px-3 md:px-5 py-1 md:py-1.5 rounded-full font-bold text-[10px] md:text-xs bg-indigo-600 text-white shadow-md">Suomi (فنلندي)</button>
                 <button onclick="setLanguage('en')" id="btn-en" class="btn-lang px-3 md:px-5 py-1 md:py-1.5 rounded-full font-bold text-[10px] md:text-xs bg-slate-100 text-slate-600">English (إنجليزي)</button>
@@ -185,8 +187,8 @@
         
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const clockRadius = 155; // Biraz büyütüldü
-        const ringRadius = 215; // Biraz büyütüldü
+        const clockRadius = 155; 
+        const ringRadius = 215; 
 
         function setLanguage(lang) {
             language = lang;
