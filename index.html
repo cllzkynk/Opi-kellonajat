@@ -5,180 +5,590 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Interaktiivinen Kello - Opi kellonajat</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
         
-        * { margin:0; padding:0; box-sizing:border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            touch-action:none;
-            font-family:'Plus Jakarta Sans','Noto Sans Arabic',sans-serif;
-            height:100vh;
-            display:flex; align-items:center; justify-content:center;
+            touch-action: none; 
+            font-family: 'Plus Jakarta Sans', 'Noto Sans Arabic', sans-serif;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
         .main-container {
-            height:100vh; width:100%; max-width:600px;
-            display:flex; flex-direction:column;
-            background:white;
+            height: 100vh;
+            height: 100dvh;
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            position: relative;
         }
-        #clockCanvas { cursor:grab; touch-action:none; }
+
+        .header-section {
+            flex-shrink: 0;
+            padding: 0.75rem 1rem 0.5rem;
+            background: linear-gradient(to bottom, #f8fafc, white);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .clock-display-area {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 0.5rem 1rem;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .clock-canvas-wrapper {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            width: 100%;
+            max-height: 42vh;
+            position: relative;
+        }
+
+        #clockCanvas {
+            max-width: min(90vw, 450px);
+            max-height: min(42vh, 450px);
+            width: auto;
+            height: auto;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .readings-panel, .quiz-panel {
+            flex-shrink: 0;
+            margin-top: 0.5rem;
+            background: #f8fafc;
+            border-radius: 1.25rem;
+            padding: 1rem;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.06);
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .alt-reading-block {
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .footer-section {
+            flex-shrink: 0;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(to top, #f8fafc, white);
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .arabic {
+            direction: rtl;
+            font-family: 'Noto Sans Arabic', sans-serif;
+        }
+
+        .btn-lang, .btn-mode, .btn-level {
+            transition: all 0.2s ease;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            transition: width 0.4s ease;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            animation: confetti-fall 3s linear forwards;
+            z-index: 1100;
+            pointer-events: none;
+        }
+
+        @keyframes confetti-fall {
+            to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        .overlay.active { display: flex; }
     </style>
 </head>
 <body>
 
-<div class="main-container">
+    <div class="main-container">
+        
+        <!-- Header -->
+        <div class="header-section">
+            <div class="flex items-center justify-between mb-1">
+                <h1 class="text-sm md:text-base font-bold text-slate-800 flex-1">
+                    Opi kellonajat <span class="text-indigo-600 font-normal arabic ml-1">(تعلم الأوقات)</span>
+                </h1>
+                <button onclick="toggleTips()" class="text-xl">💡</button>
+            </div>
+            
+            <div class="flex gap-2 mb-2">
+                <button onclick="setMode('learn')" id="btn-mode-learn" class="btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-indigo-600 text-white shadow-md">
+                    📚 Opi (تعلم)
+                </button>
+                <button onclick="setMode('quiz')" id="btn-mode-quiz" class="btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-slate-200 text-slate-600">
+                    🎯 Testi (اختبار)
+                </button>
+            </div>
 
-<div style="text-align:center; padding:10px;">
-    <canvas id="clockCanvas" width="500" height="500"></canvas>
+            <!-- Seviye Butonları -->
+            <div id="levelSelector" class="flex gap-1.5">
+                <button onclick="setLevel(1)" id="btn-level-1" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-green-100 text-green-700 border-2 border-green-500 text-center">Tam (تمama)<br>Saat</button>
+                <button onclick="setLevel(2)" id="btn-level-2" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center">Puoli (نصف)<br>Buçuk</button>
+                <button onclick="setLevel(3)" id="btn-level-3" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center">Vartti (ربع)<br>Çeyrek</button>
+                <button onclick="setLevel(4)" id="btn-level-4" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center">Kaikki (الكل)<br>Hepsi</button>
+            </div>
+        </div>
 
-    <div style="margin-top:10px;">
-        <span id="digitalClock" style="font-size:24px; font-weight:bold;">12:00</span>
-        <input id="timeInput" type="time" step="60" style="margin-left:10px;">
+        <div class="clock-display-area">
+            <div class="clock-canvas-wrapper">
+                <canvas id="clockCanvas" width="500" height="500"></canvas>
+            </div>
+            
+            <!-- ÖPPIMISTILA (Learn) -->
+            <div id="readingsPanel" class="readings-panel">
+                <div class="flex items-center justify-center gap-2 mb-2">
+                    <div id="digitalClock" class="text-2xl md:text-3xl font-mono font-bold text-indigo-600 tracking-widest">12:00</div>
+                    <!-- Yeni Zaman Giriş Alanı -->
+                    <input id="timeInput" type="time" step="60" class="border rounded px-2 py-1 text-sm ml-2">
+                    <button onclick="playAudio()" class="text-xl hover:scale-110 transition-transform">🔊</button>
+                </div>
+                
+                <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 text-center mb-2">
+                    <div id="timeWordsMain" class="text-base md:text-lg font-bold text-slate-800 italic leading-snug">Kello on kaksitoista</div>
+                    <div id="arabicMain" class="text-sm md:text-base text-indigo-500 font-semibold arabic mt-1 leading-snug">الساعة هي الثانية عشرة</div>
+                </div>
+
+                <div class="alt-reading-block">
+                    <div id="altSection" class="invisible">
+                        <div class="text-[9px] uppercase text-slate-400 font-bold mb-1 text-center">tai voimme sanoa</div>
+                        <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-200 text-center">
+                            <div id="timeWordsAlt" class="text-sm md:text-base font-bold text-slate-800 italic leading-snug">-</div>
+                            <div id="arabicAlt" class="text-xs md:text-sm text-indigo-500 font-semibold arabic mt-0.5 leading-snug">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TESTITILA (Quiz) -->
+            <div id="quizPanel" class="quiz-panel hidden">
+                <div class="progress-bar"><div id="quizProgress" class="progress-fill" style="width: 0%"></div></div>
+                
+                <div id="quizQuestion" class="text-center">
+                    <h2 class="text-lg font-bold text-slate-700">Näytä kello:</h2>
+                    <p class="text-2xl font-bold text-indigo-600" id="quizTime">12:00</p>
+                    <p class="text-base text-slate-500 arabic" id="quizTimeAr">الثانية عشرة</p>
+                    
+                    <button id="btnCheck" onclick="checkQuizAnswer()" class="mt-4 bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200">Tarkista (تحقق) ✓</button>
+                </div>
+
+                <div id="quizResult" class="hidden mt-2 text-center p-3 rounded-xl">
+                    <p class="font-bold text-lg mb-2"></p>
+                    <button onclick="nextQuizQuestion()" class="bg-slate-700 text-white px-6 py-2 rounded-lg text-sm font-bold shadow">Seuraava (التالي) →</button>
+                </div>
+
+                <div id="quizComplete" class="hidden text-center">
+                    <p class="text-4xl mb-2">🎉</p>
+                    <h2 class="text-2xl font-bold">Valmis! Sait <span id="finalScore">0</span>/5</h2>
+                    <button onclick="setMode('learn')" class="mt-4 bg-indigo-600 text-white px-8 py-2 rounded-xl font-bold">Uudestaan</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-section">
+            <div id="countersSection" class="grid grid-cols-2 gap-2 mb-3">
+                <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-200 text-center">
+                    <span class="text-[9px] font-bold text-emerald-800 uppercase block">Yli (بعد)</span>
+                    <div id="past-counter" class="text-emerald-600 text-lg font-black leading-none">0</div>
+                </div>
+                <div class="bg-rose-50 p-2 rounded-lg border border-rose-200 text-center">
+                    <span class="text-[9px] font-bold text-rose-800 uppercase block">Vaille (إلا)</span>
+                    <div id="to-counter" class="text-rose-600 text-lg font-black leading-none">60</div>
+                </div>
+            </div>
+
+            <div class="flex gap-2 justify-center">
+                <button onclick="setLanguage('fi')" id="btn-fi" class="btn-lang px-4 py-1.5 rounded-full font-bold text-xs bg-indigo-600 text-white shadow-md">Suomi</button>
+                <button onclick="setLanguage('en')" id="btn-en" class="btn-lang px-4 py-1.5 rounded-full font-bold text-xs bg-slate-100 text-slate-600">English</button>
+                <button onclick="setLanguage('tr')" id="btn-tr" class="btn-lang px-4 py-1.5 rounded-full font-bold text-xs bg-slate-100 text-slate-600">Türkçe</button>
+            </div>
+        </div>
     </div>
-</div>
 
-</div>
+    <!-- Tips Overlay -->
+    <div id="tipsOverlay" class="overlay">
+        <div class="bg-white p-6 rounded-2xl max-w-[90%] w-[400px]">
+            <h2 class="text-xl font-bold mb-4">💡 Vinkkejä</h2>
+            <div class="space-y-2 text-sm">
+                <p>🟢 <b>Vihreä:</b> Yli / Past / Geçe</p>
+                <p>🔴 <b>Punainen:</b> Vaille / To / Kala</p>
+                <p>🎓 <b>Vinkki:</b> Tartu kumpaan tahansa viisariin! Sovellus tunnistaa viisarin automaattisesti.</p>
+            </div>
+            <button onclick="toggleTips()" class="w-full mt-6 bg-indigo-600 text-white py-2 rounded-xl font-bold">Selvä!</button>
+        </div>
+    </div>
 
-<script>
-const canvas = document.getElementById('clockCanvas');
-const ctx = canvas.getContext('2d');
+    <script>
+        const canvas = document.getElementById('clockCanvas');
+        const ctx = canvas.getContext('2d');
+        let language = 'fi', currentMinutes = 0, dragTarget = null, currentLevel = 1, currentMode = 'learn';
+        let quizQuestions = [], currentQuestionIndex = 0, correctAnswers = 0;
+        const centerX = 250, centerY = 250, clockRadius = 155, ringRadius = 215;
 
-let currentMinutes = 0;
-let dragTarget = null;
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('btn-mode-learn').className = mode === 'learn' ? 'btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-indigo-600 text-white shadow-md' : 'btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-slate-200 text-slate-600';
+            document.getElementById('btn-mode-quiz').className = mode === 'quiz' ? 'btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-indigo-600 text-white shadow-md' : 'btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-slate-200 text-slate-600';
+            
+            if (mode === 'quiz') {
+                document.getElementById('readingsPanel').classList.add('hidden');
+                document.getElementById('quizPanel').classList.remove('hidden');
+                document.getElementById('levelSelector').classList.add('invisible');
+                startQuiz();
+            } else {
+                document.getElementById('readingsPanel').classList.remove('hidden');
+                document.getElementById('quizPanel').classList.add('hidden');
+                document.getElementById('levelSelector').classList.remove('invisible');
+                document.getElementById('quizResult').classList.add('hidden');
+                document.getElementById('quizComplete').classList.add('hidden');
+                document.getElementById('quizQuestion').classList.remove('hidden');
+                document.getElementById('quizQuestion').style.opacity = '1';
+            }
+            updateDisplay();
+        }
 
-const centerX = 250, centerY = 250, clockRadius = 155;
+        function setLevel(l) {
+            currentLevel = l;
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`btn-level-${i}`).className = i === l ? 
+                    'btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-green-100 text-green-700 border-2 border-green-500 text-center' : 
+                    'btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center';
+            }
+            snapToLevel(l); updateDisplay();
+        }
 
-// ---------- DRAW ----------
-function drawClock() {
-    ctx.clearRect(0,0,500,500);
+        function snapToLevel(level) {
+            const m = currentMinutes % 60;
+            if (level === 1) currentMinutes = Math.floor(currentMinutes / 60) * 60;
+            else if (level === 2) currentMinutes = Math.floor(currentMinutes / 60) * 60 + (m < 30 ? 0 : 30);
+            else if (level === 3) {
+                const snaps = [0, 15, 30, 45];
+                currentMinutes = Math.floor(currentMinutes / 60) * 60 + snaps.reduce((a, b) => Math.abs(b-m) < Math.abs(a-m) ? b : a);
+            }
+        }
 
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, clockRadius, 0, 2*Math.PI);
-    ctx.fillStyle='white';
-    ctx.fill();
-    ctx.stroke();
+        function setLanguage(l) {
+            language = l;
+            ['fi', 'en', 'tr'].forEach(b => document.getElementById(`btn-${b}`).className = b === l ? 'btn-lang px-4 py-1.5 rounded-full font-bold text-xs bg-indigo-600 text-white shadow-md' : 'btn-lang px-4 py-1.5 rounded-full font-bold text-xs bg-slate-100 text-slate-600');
+            updateDisplay();
+        }
 
-    for(let i=1;i<=12;i++){
-        const a = (i*30-90)*Math.PI/180;
-        ctx.fillText(i, centerX+(clockRadius-30)*Math.cos(a), centerY+(clockRadius-30)*Math.sin(a));
-    }
+        function playAudio() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const text = document.getElementById('timeWordsMain').innerText;
+                const utterance = new SpeechSynthesisUtterance(text);
+                if (language === 'fi') utterance.lang = 'fi-FI';
+                else if (language === 'en') utterance.lang = 'en-US';
+                else if (language === 'tr') utterance.lang = 'tr-TR';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
 
-    const m = currentMinutes % 60;
-    const h = Math.floor(currentMinutes/60)%12;
+        function drawClock() {
+            ctx.clearRect(0,0,500,500);
+            const m = currentMinutes % 60, h = Math.floor(currentMinutes/60) % 12, rad = (m*6-90)*(Math.PI/180);
+            
+            if (currentLevel >= 2) {
+                ctx.beginPath(); ctx.lineWidth = 45; ctx.lineCap = 'butt'; ctx.strokeStyle = '#34d399'; ctx.arc(centerX, centerY, ringRadius, -Math.PI / 2, rad, false); ctx.stroke();
+                ctx.beginPath(); ctx.strokeStyle = '#fb7185'; ctx.arc(centerX, centerY, ringRadius, rad, 1.5 * Math.PI, false); ctx.stroke();
+                if (m > 2) drawTextOnRing(m.toString(), (-Math.PI/2 + rad)/2, ringRadius, '#064e3b');
+                if (m < 58) drawTextOnRing(((60-m)%60).toString(), (rad + 1.5 * Math.PI)/2, ringRadius, '#881337');
+            }
+            
+            ctx.beginPath(); ctx.arc(centerX, centerY, clockRadius, 0, 2 * Math.PI); ctx.fillStyle = 'white'; ctx.fill(); ctx.strokeStyle = '#334155'; ctx.lineWidth = 4; ctx.stroke();
+            
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            for (let i=1; i<=12; i++) {
+                const a = (i*30-90)*(Math.PI/180);
+                if ([12, 3, 6, 9].includes(i)) {
+                    ctx.fillStyle = '#1e1b4b';
+                    ctx.font = '900 36px Arial';
+                } else {
+                    ctx.fillStyle = '#475569';
+                    ctx.font = 'bold 26px Arial';
+                }
+                ctx.fillText(i.toString(), centerX + (clockRadius-38)*Math.cos(a), centerY + (clockRadius-38)*Math.sin(a));
+            }
 
-    drawHand((h + m/60)*30, clockRadius*0.6, 8, '#000');
-    drawHand(m*6, clockRadius*0.9, 4, 'blue');
-}
+            for (let i=0; i<60; i++) {
+                const a = (i*6-90)*(Math.PI/180);
+                const isQuarter = i % 15 === 0;
+                const isBig = i % 5 === 0;
+                ctx.beginPath(); 
+                if (isQuarter) { ctx.lineWidth = 6; ctx.strokeStyle = '#1e1b4b'; }
+                else if (isBig) { ctx.lineWidth = 4; ctx.strokeStyle = '#0f172a'; }
+                else { ctx.lineWidth = 2; ctx.strokeStyle = '#cbd5e1'; }
+                const startDist = isQuarter ? clockRadius - 22 : (isBig ? clockRadius - 18 : clockRadius - 10);
+                ctx.moveTo(centerX + startDist * Math.cos(a), centerY + startDist * Math.sin(a));
+                ctx.lineTo(centerX + clockRadius * Math.cos(a), centerY + clockRadius * Math.sin(a)); 
+                ctx.stroke();
+            }
 
-function drawHand(angle, length, width, color){
-    const a = (angle-90)*Math.PI/180;
-    ctx.beginPath();
-    ctx.lineWidth=width;
-    ctx.strokeStyle=color;
-    ctx.moveTo(centerX, centerY);
-    ctx.lineTo(centerX+length*Math.cos(a), centerY+length*Math.sin(a));
-    ctx.stroke();
-}
+            drawHand(((h + m/60)*30-90)*(Math.PI/180), clockRadius*0.55, 12, '#1e293b');
+            if (currentLevel >= 2) drawHand(rad, clockRadius*0.85, 6, '#4f46e5');
+            
+            ctx.beginPath(); ctx.arc(centerX, centerY, 14, 0, 2 * Math.PI); ctx.fillStyle = '#1e293b'; ctx.fill();
+            ctx.beginPath(); ctx.arc(centerX, centerY, 6, 0, 2 * Math.PI); ctx.fillStyle = 'white'; ctx.fill();
+        }
 
-// ---------- UPDATE ----------
-function updateDisplay(){
-    const h = Math.floor(currentMinutes/60)%12;
-    const m = currentMinutes%60;
+        function drawTextOnRing(t, a, r, c) { ctx.fillStyle = c; ctx.font = '900 32px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, centerX+r*Math.cos(a), centerY+r*Math.sin(a)); }
+        function drawHand(a, l, w, c) { ctx.beginPath(); ctx.lineCap = 'round'; ctx.lineWidth = w; ctx.strokeStyle = c; ctx.moveTo(centerX, centerY); ctx.lineTo(centerX+l*Math.cos(a), centerY+l*Math.sin(a)); ctx.stroke(); }
 
-    const txt = `${(h||12).toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
-    document.getElementById('digitalClock').innerText = txt;
+        function updateDisplay() {
+            const h = Math.floor(currentMinutes / 60) % 12;
+            const m = currentMinutes % 60;
+            
+            document.getElementById('digitalClock').innerText = `${(h||12).toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+            document.getElementById('timeInput').value = `${(h||12).toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+            
+            document.getElementById('past-counter').innerText = m; 
+            document.getElementById('to-counter').innerText = (60 - m) % 60;
+            
+            const res = formatTimeWords(h, m);
+            document.getElementById('timeWordsMain').innerText = res.main; 
+            document.getElementById('arabicMain').innerText = res.mainAr;
+            
+            if (res.alt && currentLevel >= 3) {
+                document.getElementById('timeWordsAlt').innerText = res.alt; 
+                document.getElementById('arabicAlt').innerText = res.altAr;
+                document.getElementById('connectorText').innerText = getConnector(language);
+                document.getElementById('altSection').classList.remove('invisible');
+            } else {
+                document.getElementById('altSection').classList.add('invisible');
+            }
+            drawClock();
+        }
 
-    document.getElementById('timeInput').value = txt;
+        function getConnector(lang) {
+            if (lang === 'fi') return "tai voimme sanoa";
+            if (lang === 'tr') return "veya şöyle diyebiliriz";
+            return "or we can say";
+        }
 
-    drawClock();
-}
+        function formatTimeWords(h, m) {
+            const fi = ["kaksitoista","yksi","kaksi","kolme","neljä","viisi","kuusi","seitsemän","kahdeksan","yhdeksän","kymmenen","yksitoista","kaksitoista"];
+            const ar = ["الثانية عشرة","الواحدة","الثانية","الثالثة","الرابعة","الخامسة","السادسة","السابعة","الثامنة","التاسعة","العاشرة","الحادية عشرة","الثانية عشرة"];
+            const tr = ["on iki","bir","iki","üç","dört","beş","altı","yedi","sekiz","dokuz","on","on bir","on iki"];
+            const nH = (h+1)%12, cH = h%12;
+            let res = { main: "", mainAr: "", alt: "", altAr: "" };
+            if (language === 'fi') {
+                if (m === 0) { res.main = `Kello on ${fi[cH]}`; res.mainAr = `الساعة ${ar[cH]} تماماً`; }
+                else if (m === 30) { res.main = `Kello on puoli ${fi[nH]}`; res.mainAr = `الساعة ${ar[cH]} والنصف`; }
+                else if (m === 15) { res.main = `Kello on varttia yli ${fi[cH]}`; res.mainAr = `الساعة ${ar[cH]} والربع`; res.alt = `Kello on viisitoista yli ${fi[cH]}`; res.altAr = `الساعة ${ar[cH]} و 15 دقيقة`; }
+                else if (m === 45) { res.main = `Kello on varttia vaille ${fi[nH]}`; res.mainAr = `الساعة ${ar[nH]} إلا الربع`; res.alt = `Kello on viisitoista vaille ${fi[nH]}`; res.altAr = `الساعة ${ar[nH]} إلا 15 دقيقة`; }
+                else if (m < 30) { res.main = `Kello on ${m} yli ${fi[cH]}`; res.mainAr = `الساعة ${ar[cH]} و ${m} دقيقة`; }
+                else { res.main = `Kello on ${60 - m} vaille ${fi[nH]}`; res.mainAr = `الساعة ${ar[nH]} إلا ${60 - m} دقيقة`; }
+            } else if (language === 'tr') {
+                const trAcc = ["on ikiyi","biri","ikiyi","üçü","dördü","beşi","altıyı","yediyi","sekizi","dokuzu","onu","on biri","on ikiyi"];
+                const trDat = ["on ikiye","bire","ikiye","üçe","dörde","beşe","altıya","yediye","sekize","dokuza","ona","on bire","on ikiye"];
+                if (m === 0) { res.main = `Saat ${tr[cH]}`; res.mainAr = `الساعة ${ar[cH]} تماماً`; }
+                else if (m === 30) { res.main = `Saat ${tr[cH]} buçuk`; res.mainAr = `الساعة ${ar[cH]} والنصف`; }
+                else if (m === 15) { res.main = `Saat ${trAcc[cH]} çeyrek geçiyor`; res.mainAr = `الساعة ${ar[cH]} والربع`; res.alt = `Saat ${trAcc[cH]} on beş geçiyor`; res.altAr = `الساعة ${ar[cH]} ve 15 dakika`; }
+                else if (m === 45) { res.main = `Saat ${trDat[nH]} çeyrek var`; res.mainAr = `الساعة ${ar[nH]} إلا الربع`; res.alt = `Saat ${trDat[nH]} on beş var`; res.altAr = `الساعة ${ar[nH]} e 15 dakika var`; }
+                else if (m < 30) { res.main = `Saat ${trAcc[cH]} ${m} geçiyor`; res.mainAr = `الساعة ${ar[cH]} ve ${m} dakika`; }
+                else { res.main = `Saat ${trDat[nH]} ${60 - m} var`; res.mainAr = `الساعة ${ar[nH]} إلا ${60 - m} dakiqa`; }
+            } else {
+                if (m === 0) { res.main = `It's ${cH||12} o'clock`; res.mainAr = `الساعة ${ar[cH]} تماماً`; }
+                else if (m === 15) { res.main = `It's quarter past ${cH||12}`; res.mainAr = `الساعة ${ar[cH]} والربع`; res.alt = `It's fifteen past ${cH||12}`; res.altAr = `الساعة ${ar[cH]} and 15 min`; }
+                else if (m === 30) { res.main = `It's half past ${cH||12}`; res.mainAr = `الساعة ${ar[cH]} والنصف`; }
+                else if (m === 45) { res.main = `It's quarter to ${nH||12}`; res.mainAr = `الساعة ${ar[nH]} إلا الربع`; res.alt = `It's fifteen to ${nH||12}`; res.altAr = `الساعة ${ar[nH]} to 15 min`; }
+                else if (m < 30) { res.main = `It's ${m} past ${cH||12}`; res.mainAr = `الساعة ${ar[cH]} and ${m} min`; }
+                else { res.main = `It's ${60 - m} to ${nH||12}`; res.mainAr = `الساعة ${ar[nH]} minus ${60 - m} min`; }
+            }
+            return res;
+        }
 
-// ---------- FIXED DRAG ----------
-function startDragging(e){
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        function startQuiz() {
+            quizQuestions = []; correctAnswers = 0; currentQuestionIndex = 0;
+            const pools = [[0,60,120,180,240],[30,90,150,210,270],[15,45,75,105,135],[8,22,37,52,44]];
+            const pool = pools[currentLevel-1];
+            for(let i=0; i<5; i++) quizQuestions.push(pool[i % pool.length] + Math.floor(Math.random()*12)*60);
+            showQuizQuestion();
+        }
 
-    const dx = x - centerX;
-    const dy = y - centerY;
+        function showQuizQuestion() {
+            const t = quizQuestions[currentQuestionIndex], h = Math.floor(t/60) % 12, m = t % 60;
+            document.getElementById('quizTime').innerText = `${h||12}:${m.toString().padStart(2,'0')}`;
+            document.getElementById('quizTimeAr').innerText = formatTimeWords(h, m).mainAr;
+            document.getElementById('quizProgress').style.width = `${(currentQuestionIndex/5)*100}%`;
+            document.getElementById('quizQuestion').classList.remove('hidden');
+            document.getElementById('quizQuestion').style.opacity = '1';
+            document.getElementById('quizResult').classList.add('hidden');
+            document.getElementById('quizComplete').classList.add('hidden');
+        }
 
-    const dist = Math.sqrt(dx*dx + dy*dy);
+        function checkQuizAnswer() {
+            const target = quizQuestions[currentQuestionIndex] % 720, cur = currentMinutes % 720;
+            const isOk = Math.min(Math.abs(cur-target), 720-Math.abs(cur-target)) <= (currentLevel===4?3:0);
+            if(isOk) { correctAnswers++; createConfetti(); }
+            document.getElementById('quizQuestion').style.opacity = '0.4';
+            const resDiv = document.getElementById('quizResult'); resDiv.classList.remove('hidden');
+            resDiv.querySelector('p').innerHTML = isOk ? '✅ <span class="text-green-600">Oikein! (صحيح)</span>' : '❌ <span class="text-red-600">Väärin (خطأ)</span>';
+        }
 
-    let angle = Math.atan2(dy, dx)*180/Math.PI + 90;
-    if(angle<0) angle+=360;
+        function nextQuizQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= 5) {
+                document.getElementById('quizQuestion').classList.add('hidden');
+                document.getElementById('quizResult').classList.add('hidden');
+                document.getElementById('quizComplete').classList.remove('hidden');
+                document.getElementById('finalScore').innerText = correctAnswers;
+                if(correctAnswers===5) createConfetti(30);
+            } else showQuizQuestion();
+        }
 
-    const m = currentMinutes%60;
-    const h = Math.floor(currentMinutes/60)%12;
+        function createConfetti(n=15) {
+            for(let i=0; i<n; i++) {
+                setTimeout(() => {
+                    const c = document.createElement('div'); c.className = 'confetti';
+                    c.style.left = Math.random()*100+'%'; c.style.top = '-10px';
+                    c.style.background = ['#f39c12','#e74c3c','#3498db','#2ecc71','#9b59b6'][Math.floor(Math.random()*5)];
+                    document.body.appendChild(c); setTimeout(()=>c.remove(), 3000);
+                }, i*50);
+            }
+        }
 
-    const mAngle = m*6;
-    const hAngle = h*30 + m*0.5;
+        function toggleTips() { document.getElementById('tipsOverlay').classList.toggle('active'); }
 
-    const diffM = Math.min(Math.abs(angle-mAngle), 360-Math.abs(angle-mAngle));
-    const diffH = Math.min(Math.abs(angle-hAngle), 360-Math.abs(angle-hAngle));
+        // Uusi Tarkka Viisareiden Valinta
+        function startDragging(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            const dx = x - centerX;
+            const dy = y - centerY;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            
+            let angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+            if (angle < 0) angle += 360;
 
-    if(dist > 120){
-        dragTarget = diffM < 30 ? 'minute' : null;
-    } else {
-        dragTarget = diffH < 30 ? 'hour' : null;
-    }
+            const m = currentMinutes % 60;
+            const h = Math.floor(currentMinutes / 60) % 12;
+            const minuteAngle = m * 6;
+            const hourAngle = h * 30 + m * 0.5;
 
-    if(!dragTarget){
-        dragTarget = diffM < diffH ? 'minute' : 'hour';
-    }
-}
+            const diffMinute = Math.min(Math.abs(angle - minuteAngle), 360 - Math.abs(angle - minuteAngle));
+            const diffHour = Math.min(Math.abs(angle - hourAngle), 360 - Math.abs(angle - hourAngle));
 
-function handleInteraction(e){
-    if(!dragTarget) return;
+            if (distance > 100) {
+                dragTarget = diffMinute < 25 ? 'minute' : null;
+            } else {
+                dragTarget = diffHour < 25 ? 'hour' : null;
+            }
 
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+            if (!dragTarget) {
+                dragTarget = diffMinute < diffHour ? 'minute' : 'hour';
+            }
+        }
 
-    const dx = x - centerX;
-    const dy = y - centerY;
+        function handleInteraction(e) {
+            if (!dragTarget) return; 
+            if (e.cancelable) e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            const dx = clientX - rect.left - centerX;
+            const dy = clientY - rect.top - centerY;
+            
+            let angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+            if (angle < 0) angle += 360;
+            
+            const currentM = currentMinutes % 60;
+            
+            if (dragTarget === 'minute') { 
+                const m = Math.round(angle / 6) % 60; 
+                currentMinutes = (Math.floor(currentMinutes / 60) * 60) + m; 
+                snapToLevel(currentLevel); 
+            } else if (dragTarget === 'hour') { 
+                const newHour = angle / 30;
+                const baseHour = Math.floor(newHour) % 12;
+                currentMinutes = baseHour * 60 + currentM;
+                if (currentLevel === 1) currentMinutes = baseHour * 60;
+            }
+            updateDisplay();
+        }
 
-    let angle = Math.atan2(dy, dx)*180/Math.PI + 90;
-    if(angle<0) angle+=360;
+        canvas.addEventListener('mousedown', startDragging);
+        window.addEventListener('mousemove', handleInteraction);
+        window.addEventListener('mouseup', () => dragTarget = null);
+        
+        canvas.addEventListener('touchstart', e => {
+            startDragging(e);
+            if (dragTarget) e.preventDefault();
+        }, {passive:false});
+        canvas.addEventListener('touchmove', e => {
+            if (dragTarget) {
+                handleInteraction(e);
+                e.preventDefault();
+            }
+        }, {passive:false});
+        canvas.addEventListener('touchend', () => dragTarget = null);
 
-    let h = Math.floor(currentMinutes/60);
-    let m = currentMinutes%60;
+        // Zaman Giriş Alanı Dinleyicisi
+        document.getElementById('timeInput').addEventListener('input', (e) => {
+            const val = e.target.value;
+            if (!val) return;
+            const [h, m] = val.split(':').map(Number);
+            currentMinutes = (h % 12) * 60 + m;
+            updateDisplay();
+        });
 
-    if(dragTarget === 'minute'){
-        m = Math.round(angle/6)%60;
-    } else {
-        const newHour = angle / 30;
-        h = Math.floor(newHour)%12;
-    }
-
-    currentMinutes = h*60 + m;
-    updateDisplay();
-}
-
-function stopDragging(){ dragTarget = null; }
-
-// ---------- INPUT ----------
-document.getElementById('timeInput').addEventListener('input', e=>{
-    const val = e.target.value;
-    if(!val) return;
-
-    const [h,m] = val.split(':').map(Number);
-    currentMinutes = (h%12)*60 + m;
-    updateDisplay();
-});
-
-// ---------- EVENTS ----------
-canvas.addEventListener('mousedown', startDragging);
-window.addEventListener('mousemove', handleInteraction);
-window.addEventListener('mouseup', stopDragging);
-
-canvas.addEventListener('touchstart', startDragging);
-canvas.addEventListener('touchmove', handleInteraction);
-canvas.addEventListener('touchend', stopDragging);
-
-// ---------- INIT ----------
-updateDisplay();
-</script>
-
+        setLanguage('fi'); setLevel(1);
+    </script>
 </body>
 </html>
