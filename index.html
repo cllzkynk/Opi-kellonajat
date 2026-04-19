@@ -189,7 +189,7 @@
             <div id="readingsPanel" class="readings-panel">
                 <div class="flex items-center justify-center gap-2 mb-2">
                     <div id="digitalClock" class="text-2xl md:text-3xl font-mono font-bold text-indigo-600 tracking-widest">12:00</div>
-                    <button onclick="playAudio()" class="text-xl">🔊</button>
+                    <button onclick="playAudio()" class="text-xl hover:scale-110 transition-transform">🔊</button>
                 </div>
                 
                 <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 text-center mb-2">
@@ -313,6 +313,24 @@
             updateDisplay();
         }
 
+        function playAudio() {
+            if ('speechSynthesis' in window) {
+                // Katkaistaan edellinen puhe
+                window.speechSynthesis.cancel();
+                
+                const text = document.getElementById('timeWordsMain').innerText;
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Asetetaan kieli
+                if (language === 'fi') utterance.lang = 'fi-FI';
+                else if (language === 'en') utterance.lang = 'en-US';
+                else if (language === 'tr') utterance.lang = 'tr-TR';
+                
+                utterance.rate = 0.9; // Hieman hitaampi selkeyden vuoksi
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
         function drawClock() {
             ctx.clearRect(0,0,500,500);
             const m = currentMinutes % 60, h = Math.floor(currentMinutes/60) % 12, rad = (m*6-90)*(Math.PI/180);
@@ -330,10 +348,9 @@
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             for (let i=1; i<=12; i++) {
                 const a = (i*30-90)*(Math.PI/180);
-                // Belirgin rakamlar (12, 3, 6, 9)
                 if ([12, 3, 6, 9].includes(i)) {
-                    ctx.fillStyle = '#1e1b4b'; // Daha koyu lacivert
-                    ctx.font = '900 36px Arial'; // Daha büyük ve kalın
+                    ctx.fillStyle = '#1e1b4b';
+                    ctx.font = '900 36px Arial';
                 } else {
                     ctx.fillStyle = '#475569';
                     ctx.font = 'bold 26px Arial';
@@ -349,7 +366,7 @@
                 
                 ctx.beginPath(); 
                 if (isQuarter) {
-                    ctx.lineWidth = 6; // Çeyrekler çok kalın
+                    ctx.lineWidth = 6;
                     ctx.strokeStyle = '#1e1b4b';
                 } else if (isBig) {
                     ctx.lineWidth = 4;
@@ -471,7 +488,6 @@
         }
 
         function toggleTips() { document.getElementById('tipsOverlay').classList.toggle('active'); }
-        function playAudio() { /* Synthesis can be added here if needed */ }
 
         canvas.addEventListener('mousedown', e => {
             const rect = canvas.getBoundingClientRect(), x = (e.clientX||e.touches[0].clientX)-rect.left, y = (e.clientY||e.touches[0].clientY)-rect.top;
@@ -480,6 +496,7 @@
             const dM = Math.min(Math.abs(ang-m*6), 360-Math.abs(ang-m*6)), dH = Math.min(Math.abs(ang-(h*30+m*0.5)), 360-Math.abs(ang-(h*30+m*0.5)));
             dragTarget = currentLevel===1?'hour':(dM<dH? 'minute':'hour');
         });
+
         window.addEventListener('mousemove', e => {
             if(!dragTarget) return; e.preventDefault();
             const rect = canvas.getBoundingClientRect();
@@ -491,9 +508,9 @@
             else { h = Math.floor(ang/30)%12; currentMinutes = h*60+m; }
             updateDisplay();
         });
+
         window.addEventListener('mouseup', () => dragTarget = null);
         
-        // Touch interaction fixes
         canvas.addEventListener('touchstart', e => {
             const touch = e.touches[0];
             const rect = canvas.getBoundingClientRect(), x = touch.clientX-rect.left, y = touch.clientY-rect.top;
