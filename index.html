@@ -47,9 +47,10 @@
             overflow: hidden;
         }
 
+        /* Saatin boyutu biraz artırıldı */
         #clockCanvas {
             max-width: 100%;
-            max-height: 32vh; 
+            max-height: 35vh; 
             height: auto;
             cursor: pointer;
             touch-action: none;
@@ -73,14 +74,14 @@
 
         /* Sabit yükseklik ve yerleşimi korumak için stil */
         .alt-reading-block {
-            min-height: 85px; /* İkinci okunuşun kapladığı alanı sabitler */
+            min-height: 85px; 
         }
 
         @media (max-height: 650px) {
             .text-xl { font-size: 1rem; }
             .text-lg { font-size: 0.875rem; }
             .p-3 { padding: 0.35rem; }
-            #clockCanvas { max-height: 28vh; }
+            #clockCanvas { max-height: 30vh; }
             .alt-reading-block { min-height: 70px; }
         }
     </style>
@@ -184,8 +185,8 @@
         
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const clockRadius = 145; 
-        const ringRadius = 205; 
+        const clockRadius = 155; // Biraz büyütüldü
+        const ringRadius = 215; // Biraz büyütüldü
 
         function setLanguage(lang) {
             language = lang;
