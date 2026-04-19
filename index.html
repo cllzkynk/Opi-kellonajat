@@ -70,7 +70,7 @@
             max-height: min(42vh, 450px);
             width: auto;
             height: auto;
-            cursor: grab;
+            cursor: pointer;
             touch-action: none;
         }
 
@@ -81,7 +81,7 @@
             border-radius: 1.25rem;
             padding: 1rem;
             box-shadow: inset 0 2px 8px rgba(0,0,0,0.06);
-            min-height: 200px;
+            min-height: 180px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -104,10 +104,6 @@
         .arabic {
             direction: rtl;
             font-family: 'Noto Sans Arabic', sans-serif;
-        }
-
-        .btn-lang, .btn-mode, .btn-level {
-            transition: all 0.2s ease;
         }
 
         .progress-bar {
@@ -153,7 +149,6 @@
 <body>
 
     <div class="main-container">
-        
         <!-- Header -->
         <div class="header-section">
             <div class="flex items-center justify-between mb-1">
@@ -172,12 +167,12 @@
                 </button>
             </div>
 
-            <!-- Seviye Butonları -->
+            <!-- Level Selector -->
             <div id="levelSelector" class="flex gap-1.5">
-                <button onclick="setLevel(1)" id="btn-level-1" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-green-100 text-green-700 border-2 border-green-500 text-center">Tam (تمama)<br>Saat</button>
-                <button onclick="setLevel(2)" id="btn-level-2" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center">Puoli (نصف)<br>Buçuk</button>
-                <button onclick="setLevel(3)" id="btn-level-3" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center">Vartti (ربع)<br>Çeyrek</button>
-                <button onclick="setLevel(4)" id="btn-level-4" class="btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center">Kaikki (الكل)<br>Hepsi</button>
+                <button onclick="setLevel(1)" id="btn-level-1" class="btn-level flex-1 py-1 rounded-md text-[10px] font-bold bg-green-100 text-green-700 border-2 border-green-500 text-center">Tasan<br>(تماما)</button>
+                <button onclick="setLevel(2)" id="btn-level-2" class="btn-level flex-1 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center">Puoli<br>(نصف)</button>
+                <button onclick="setLevel(3)" id="btn-level-3" class="btn-level flex-1 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center">Vartti<br>(ربع)</button>
+                <button onclick="setLevel(4)" id="btn-level-4" class="btn-level flex-1 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center">Kaikki<br>(الكل)</button>
             </div>
         </div>
 
@@ -186,11 +181,10 @@
                 <canvas id="clockCanvas" width="500" height="500"></canvas>
             </div>
             
-            <!-- ÖPPIMISTILA (Learn) -->
+            <!-- LEARN MODE -->
             <div id="readingsPanel" class="readings-panel">
                 <div class="flex items-center justify-center gap-2 mb-2">
                     <div id="digitalClock" class="text-2xl md:text-3xl font-mono font-bold text-indigo-600 tracking-widest">12:00</div>
-                    <!-- Yeni Zaman Giriş Alanı -->
                     <input id="timeInput" type="time" step="60" class="border rounded px-2 py-1 text-sm ml-2">
                     <button onclick="playAudio()" class="text-xl hover:scale-110 transition-transform">🔊</button>
                 </div>
@@ -211,7 +205,7 @@
                 </div>
             </div>
 
-            <!-- TESTITILA (Quiz) -->
+            <!-- QUIZ MODE -->
             <div id="quizPanel" class="quiz-panel hidden">
                 <div class="progress-bar"><div id="quizProgress" class="progress-fill" style="width: 0%"></div></div>
                 
@@ -251,7 +245,6 @@
             <div class="flex gap-2 justify-center">
                 <button onclick="setLanguage('fi')" id="btn-fi" class="btn-lang px-4 py-1.5 rounded-full font-bold text-xs bg-indigo-600 text-white shadow-md">Suomi</button>
                 <button onclick="setLanguage('en')" id="btn-en" class="btn-lang px-4 py-1.5 rounded-full font-bold text-xs bg-slate-100 text-slate-600">English</button>
-                <button onclick="setLanguage('tr')" id="btn-tr" class="btn-lang px-4 py-1.5 rounded-full font-bold text-xs bg-slate-100 text-slate-600">Türkçe</button>
             </div>
         </div>
     </div>
@@ -259,11 +252,12 @@
     <!-- Tips Overlay -->
     <div id="tipsOverlay" class="overlay">
         <div class="bg-white p-6 rounded-2xl max-w-[90%] w-[400px]">
-            <h2 class="text-xl font-bold mb-4">💡 Vinkkejä</h2>
+            <h2 class="text-xl font-bold mb-4">💡 Ohjeet</h2>
             <div class="space-y-2 text-sm">
-                <p>🟢 <b>Vihreä:</b> Yli / Past / Geçe</p>
-                <p>🔴 <b>Punainen:</b> Vaille / To / Kala</p>
-                <p>🎓 <b>Vinkki:</b> Tartu kumpaan tahansa viisariin! Sovellus tunnistaa viisarin automaattisesti.</p>
+                <p>🕒 <b>Liikuta viisareita:</b> Tartu suoraan akreppiin (lyhyt) tai yelkovaniin (pitkä).</p>
+                <p>🟢 <b>Vihreä kehä:</b> Osoittaa minuutit 'yli'.</p>
+                <p>🔴 <b>Punainen kehä:</b> Osoittaa minuutit 'vaille'.</p>
+                <p>⚙️ <b>Tasot:</b> Valitse vaikeustaso ylhäältä.</p>
             </div>
             <button onclick="toggleTips()" class="w-full mt-6 bg-indigo-600 text-white py-2 rounded-xl font-bold">Selvä!</button>
         </div>
@@ -272,12 +266,15 @@
     <script>
         const canvas = document.getElementById('clockCanvas');
         const ctx = canvas.getContext('2d');
-        let language = 'fi', currentMinutes = 0, dragTarget = null, currentLevel = 1, currentMode = 'learn';
-        let quizQuestions = [], currentQuestionIndex = 0, correctAnswers = 0;
         const centerX = 250, centerY = 250, clockRadius = 155, ringRadius = 215;
 
+        let language = 'fi', currentMinutes = 0, dragTarget = null, currentLevel = 1, currentMode = 'learn';
+        let quizQuestions = [], currentQuestionIndex = 0, correctAnswers = 0;
+
+        // UI Helpers
         function setMode(mode) {
             currentMode = mode;
+            dragTarget = null;
             document.getElementById('btn-mode-learn').className = mode === 'learn' ? 'btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-indigo-600 text-white shadow-md' : 'btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-slate-200 text-slate-600';
             document.getElementById('btn-mode-quiz').className = mode === 'quiz' ? 'btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-indigo-600 text-white shadow-md' : 'btn-mode flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-slate-200 text-slate-600';
             
@@ -300,27 +297,35 @@
 
         function setLevel(l) {
             currentLevel = l;
+            dragTarget = null;
             for(let i=1; i<=4; i++) {
                 document.getElementById(`btn-level-${i}`).className = i === l ? 
-                    'btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-green-100 text-green-700 border-2 border-green-500 text-center' : 
-                    'btn-level flex-1 py-1 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center';
+                    'btn-level flex-1 py-1 rounded-md text-[10px] font-bold bg-green-100 text-green-700 border-2 border-green-500 text-center' : 
+                    'btn-level flex-1 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-slate-300 text-center';
             }
-            snapToLevel(l); updateDisplay();
+            snapToLevel(); 
+            updateDisplay();
         }
 
-        function snapToLevel(level) {
-            const m = currentMinutes % 60;
-            if (level === 1) currentMinutes = Math.floor(currentMinutes / 60) * 60;
-            else if (level === 2) currentMinutes = Math.floor(currentMinutes / 60) * 60 + (m < 30 ? 0 : 30);
-            else if (level === 3) {
+        function snapToLevel() {
+            let m = currentMinutes % 60;
+            const h = Math.floor(currentMinutes / 60) % 12;
+            
+            if (currentLevel === 1) m = 0;
+            else if (currentLevel === 2) m = (m < 15 || m >= 45) ? 0 : 30;
+            else if (currentLevel === 3) {
                 const snaps = [0, 15, 30, 45];
-                currentMinutes = Math.floor(currentMinutes / 60) * 60 + snaps.reduce((a, b) => Math.abs(b-m) < Math.abs(a-m) ? b : a);
+                m = snaps.reduce((a, b) => Math.abs(b - m) < Math.abs(a - m) ? b : a);
             }
+            currentMinutes = h * 60 + m;
         }
 
         function setLanguage(l) {
             language = l;
-            ['fi', 'en', 'tr'].forEach(b => document.getElementById(`btn-${b}`).className = b === l ? 'btn-lang px-4 py-1.5 rounded-full font-bold text-xs bg-indigo-600 text-white shadow-md' : 'btn-lang px-4 py-1.5 rounded-full font-bold text-xs bg-slate-100 text-slate-600');
+            ['fi', 'en'].forEach(b => {
+                const btn = document.getElementById(`btn-${b}`);
+                if(btn) btn.className = b === l ? 'btn-lang px-4 py-1.5 rounded-full font-bold text-xs bg-indigo-600 text-white shadow-md' : 'btn-lang px-4 py-1.5 rounded-full font-bold text-xs bg-slate-100 text-slate-600';
+            });
             updateDisplay();
         }
 
@@ -329,27 +334,34 @@
                 window.speechSynthesis.cancel();
                 const text = document.getElementById('timeWordsMain').innerText;
                 const utterance = new SpeechSynthesisUtterance(text);
-                if (language === 'fi') utterance.lang = 'fi-FI';
-                else if (language === 'en') utterance.lang = 'en-US';
-                else if (language === 'tr') utterance.lang = 'tr-TR';
+                utterance.lang = language === 'fi' ? 'fi-FI' : 'en-US';
                 utterance.rate = 0.9;
                 window.speechSynthesis.speak(utterance);
             }
         }
 
+        // DRAWING ENGINE
         function drawClock() {
             ctx.clearRect(0,0,500,500);
-            const m = currentMinutes % 60, h = Math.floor(currentMinutes/60) % 12, rad = (m*6-90)*(Math.PI/180);
+            const m = currentMinutes % 60, h = Math.floor(currentMinutes/60) % 12;
+            const mRad = (m*6-90)*(Math.PI/180);
+            const hRad = ((h + m/60)*30-90)*(Math.PI/180);
             
+            // Outer Ring
             if (currentLevel >= 2) {
-                ctx.beginPath(); ctx.lineWidth = 45; ctx.lineCap = 'butt'; ctx.strokeStyle = '#34d399'; ctx.arc(centerX, centerY, ringRadius, -Math.PI / 2, rad, false); ctx.stroke();
-                ctx.beginPath(); ctx.strokeStyle = '#fb7185'; ctx.arc(centerX, centerY, ringRadius, rad, 1.5 * Math.PI, false); ctx.stroke();
-                if (m > 2) drawTextOnRing(m.toString(), (-Math.PI/2 + rad)/2, ringRadius, '#064e3b');
-                if (m < 58) drawTextOnRing(((60-m)%60).toString(), (rad + 1.5 * Math.PI)/2, ringRadius, '#881337');
+                ctx.beginPath(); ctx.lineWidth = 45; ctx.lineCap = 'butt'; ctx.strokeStyle = '#34d399'; ctx.arc(centerX, centerY, ringRadius, -Math.PI / 2, mRad, false); ctx.stroke();
+                ctx.beginPath(); ctx.strokeStyle = '#fb7185'; ctx.arc(centerX, centerY, ringRadius, mRad, 1.5 * Math.PI, false); ctx.stroke();
+                
+                const pastMidAngle = (-Math.PI/2 + mRad) / 2;
+                const toMidAngle = (mRad + 1.5 * Math.PI) / 2;
+                if (m > 2) drawTextOnRing(m.toString(), pastMidAngle, ringRadius, '#064e3b');
+                if (m < 58) drawTextOnRing(((60-m)%60).toString(), toMidAngle, ringRadius, '#881337');
             }
             
+            // Face
             ctx.beginPath(); ctx.arc(centerX, centerY, clockRadius, 0, 2 * Math.PI); ctx.fillStyle = 'white'; ctx.fill(); ctx.strokeStyle = '#334155'; ctx.lineWidth = 4; ctx.stroke();
             
+            // Numbers
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             for (let i=1; i<=12; i++) {
                 const a = (i*30-90)*(Math.PI/180);
@@ -363,36 +375,54 @@
                 ctx.fillText(i.toString(), centerX + (clockRadius-38)*Math.cos(a), centerY + (clockRadius-38)*Math.sin(a));
             }
 
+            // Ticks
             for (let i=0; i<60; i++) {
                 const a = (i*6-90)*(Math.PI/180);
-                const isQuarter = i % 15 === 0;
                 const isBig = i % 5 === 0;
                 ctx.beginPath(); 
-                if (isQuarter) { ctx.lineWidth = 6; ctx.strokeStyle = '#1e1b4b'; }
-                else if (isBig) { ctx.lineWidth = 4; ctx.strokeStyle = '#0f172a'; }
-                else { ctx.lineWidth = 2; ctx.strokeStyle = '#cbd5e1'; }
-                const startDist = isQuarter ? clockRadius - 22 : (isBig ? clockRadius - 18 : clockRadius - 10);
+                ctx.lineWidth = isBig ? 4 : 2; 
+                ctx.strokeStyle = isBig ? '#0f172a' : '#cbd5e1';
+                const startDist = isBig ? clockRadius - 18 : clockRadius - 10;
                 ctx.moveTo(centerX + startDist * Math.cos(a), centerY + startDist * Math.sin(a));
                 ctx.lineTo(centerX + clockRadius * Math.cos(a), centerY + clockRadius * Math.sin(a)); 
                 ctx.stroke();
             }
 
-            drawHand(((h + m/60)*30-90)*(Math.PI/180), clockRadius*0.55, 12, '#1e293b');
-            if (currentLevel >= 2) drawHand(rad, clockRadius*0.85, 6, '#4f46e5');
+            // Hands
+            drawHand(hRad, clockRadius*0.55, 14, '#1e293b'); // Hour
+            if (currentLevel > 1) drawHand(mRad, clockRadius*0.85, 8, '#4f46e5'); // Minute
             
+            // Center Dot
             ctx.beginPath(); ctx.arc(centerX, centerY, 14, 0, 2 * Math.PI); ctx.fillStyle = '#1e293b'; ctx.fill();
             ctx.beginPath(); ctx.arc(centerX, centerY, 6, 0, 2 * Math.PI); ctx.fillStyle = 'white'; ctx.fill();
         }
 
-        function drawTextOnRing(t, a, r, c) { ctx.fillStyle = c; ctx.font = '900 32px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, centerX+r*Math.cos(a), centerY+r*Math.sin(a)); }
-        function drawHand(a, l, w, c) { ctx.beginPath(); ctx.lineCap = 'round'; ctx.lineWidth = w; ctx.strokeStyle = c; ctx.moveTo(centerX, centerY); ctx.lineTo(centerX+l*Math.cos(a), centerY+l*Math.sin(a)); ctx.stroke(); }
+        function drawTextOnRing(t, a, r, c) { 
+            ctx.fillStyle = c; 
+            ctx.font = '900 32px sans-serif'; 
+            ctx.textAlign = 'center'; 
+            ctx.textBaseline = 'middle'; 
+            ctx.fillText(t, centerX + r * Math.cos(a), centerY + r * Math.sin(a)); 
+        }
+        
+        function drawHand(a, l, w, c) { 
+            ctx.beginPath(); 
+            ctx.lineCap = 'round'; 
+            ctx.lineWidth = w; 
+            ctx.strokeStyle = c; 
+            ctx.moveTo(centerX, centerY); 
+            ctx.lineTo(centerX + l * Math.cos(a), centerY + l * Math.sin(a)); 
+            ctx.stroke(); 
+        }
 
+        // Logic
         function updateDisplay() {
             const h = Math.floor(currentMinutes / 60) % 12;
             const m = currentMinutes % 60;
+            const displayH = h === 0 ? 12 : h;
             
-            document.getElementById('digitalClock').innerText = `${(h||12).toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
-            document.getElementById('timeInput').value = `${(h||12).toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+            document.getElementById('digitalClock').innerText = `${displayH.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+            document.getElementById('timeInput').value = `${displayH.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
             
             document.getElementById('past-counter').innerText = m; 
             document.getElementById('to-counter').innerText = (60 - m) % 60;
@@ -404,7 +434,6 @@
             if (res.alt && currentLevel >= 3) {
                 document.getElementById('timeWordsAlt').innerText = res.alt; 
                 document.getElementById('arabicAlt').innerText = res.altAr;
-                document.getElementById('connectorText').innerText = getConnector(language);
                 document.getElementById('altSection').classList.remove('invisible');
             } else {
                 document.getElementById('altSection').classList.add('invisible');
@@ -412,16 +441,9 @@
             drawClock();
         }
 
-        function getConnector(lang) {
-            if (lang === 'fi') return "tai voimme sanoa";
-            if (lang === 'tr') return "veya şöyle diyebiliriz";
-            return "or we can say";
-        }
-
         function formatTimeWords(h, m) {
             const fi = ["kaksitoista","yksi","kaksi","kolme","neljä","viisi","kuusi","seitsemän","kahdeksan","yhdeksän","kymmenen","yksitoista","kaksitoista"];
             const ar = ["الثانية عشرة","الواحدة","الثانية","الثالثة","الرابعة","الخامسة","السادسة","السابعة","الثامنة","التاسعة","العاشرة","الحادية عشرة","الثانية عشرة"];
-            const tr = ["on iki","bir","iki","üç","dört","beş","altı","yedi","sekiz","dokuz","on","on bir","on iki"];
             const nH = (h+1)%12, cH = h%12;
             let res = { main: "", mainAr: "", alt: "", altAr: "" };
             if (language === 'fi') {
@@ -429,33 +451,33 @@
                 else if (m === 30) { res.main = `Kello on puoli ${fi[nH]}`; res.mainAr = `الساعة ${ar[cH]} والنصف`; }
                 else if (m === 15) { res.main = `Kello on varttia yli ${fi[cH]}`; res.mainAr = `الساعة ${ar[cH]} والربع`; res.alt = `Kello on viisitoista yli ${fi[cH]}`; res.altAr = `الساعة ${ar[cH]} و 15 دقيقة`; }
                 else if (m === 45) { res.main = `Kello on varttia vaille ${fi[nH]}`; res.mainAr = `الساعة ${ar[nH]} إلا الربع`; res.alt = `Kello on viisitoista vaille ${fi[nH]}`; res.altAr = `الساعة ${ar[nH]} إلا 15 دقيقة`; }
-                else if (m < 30) { res.main = `Kello on ${m} yli ${fi[cH]}`; res.mainAr = `الساعة ${ar[cH]} و ${m} دقيقة`; }
-                else { res.main = `Kello on ${60 - m} vaille ${fi[nH]}`; res.mainAr = `الساعة ${ar[nH]} إلا ${60 - m} دقيقة`; }
-            } else if (language === 'tr') {
-                const trAcc = ["on ikiyi","biri","ikiyi","üçü","dördü","beşi","altıyı","yediyi","sekizi","dokuzu","onu","on biri","on ikiyi"];
-                const trDat = ["on ikiye","bire","ikiye","üçe","dörde","beşe","altıya","yediye","sekize","dokuza","ona","on bire","on ikiye"];
-                if (m === 0) { res.main = `Saat ${tr[cH]}`; res.mainAr = `الساعة ${ar[cH]} تماماً`; }
-                else if (m === 30) { res.main = `Saat ${tr[cH]} buçuk`; res.mainAr = `الساعة ${ar[cH]} والنصف`; }
-                else if (m === 15) { res.main = `Saat ${trAcc[cH]} çeyrek geçiyor`; res.mainAr = `الساعة ${ar[cH]} والربع`; res.alt = `Saat ${trAcc[cH]} on beş geçiyor`; res.altAr = `الساعة ${ar[cH]} ve 15 dakika`; }
-                else if (m === 45) { res.main = `Saat ${trDat[nH]} çeyrek var`; res.mainAr = `الساعة ${ar[nH]} إلا الربع`; res.alt = `Saat ${trDat[nH]} on beş var`; res.altAr = `الساعة ${ar[nH]} e 15 dakika var`; }
-                else if (m < 30) { res.main = `Saat ${trAcc[cH]} ${m} geçiyor`; res.mainAr = `الساعة ${ar[cH]} ve ${m} dakika`; }
-                else { res.main = `Saat ${trDat[nH]} ${60 - m} var`; res.mainAr = `الساعة ${ar[nH]} إلا ${60 - m} dakiqa`; }
+                else if (m < 30) { res.main = `Kello on ${m} yli ${fi[cH]}`; res.mainAr = `الساعة ${ar[cH]} و ${m} minuuttia`; }
+                else { res.main = `Kello on ${60 - m} vaille ${fi[nH]}`; res.mainAr = `الساعة ${ar[nH]} إلا ${60 - m} minuuttia`; }
             } else {
-                if (m === 0) { res.main = `It's ${cH||12} o'clock`; res.mainAr = `الساعة ${ar[cH]} تماماً`; }
-                else if (m === 15) { res.main = `It's quarter past ${cH||12}`; res.mainAr = `الساعة ${ar[cH]} والربع`; res.alt = `It's fifteen past ${cH||12}`; res.altAr = `الساعة ${ar[cH]} and 15 min`; }
-                else if (m === 30) { res.main = `It's half past ${cH||12}`; res.mainAr = `الساعة ${ar[cH]} والنصف`; }
+                if (m === 0) { res.main = `It's ${h||12} o'clock`; res.mainAr = `الساعة ${ar[cH]} تماماً`; }
+                else if (m === 15) { res.main = `It's quarter past ${h||12}`; res.mainAr = `الساعة ${ar[cH]} والربع`; res.alt = `It's fifteen past ${h||12}`; res.altAr = `الساعة ${ar[cH]} and 15 min`; }
+                else if (m === 30) { res.main = `It's half past ${h||12}`; res.mainAr = `الساعة ${ar[cH]} والنصف`; }
                 else if (m === 45) { res.main = `It's quarter to ${nH||12}`; res.mainAr = `الساعة ${ar[nH]} إلا الربع`; res.alt = `It's fifteen to ${nH||12}`; res.altAr = `الساعة ${ar[nH]} to 15 min`; }
-                else if (m < 30) { res.main = `It's ${m} past ${cH||12}`; res.mainAr = `الساعة ${ar[cH]} and ${m} min`; }
+                else if (m < 30) { res.main = `It's ${m} past ${h||12}`; res.mainAr = `الساعة ${ar[cH]} and ${m} min`; }
                 else { res.main = `It's ${60 - m} to ${nH||12}`; res.mainAr = `الساعة ${ar[nH]} minus ${60 - m} min`; }
             }
             return res;
         }
 
+        // QUIZ LOGIC
         function startQuiz() {
             quizQuestions = []; correctAnswers = 0; currentQuestionIndex = 0;
-            const pools = [[0,60,120,180,240],[30,90,150,210,270],[15,45,75,105,135],[8,22,37,52,44]];
-            const pool = pools[currentLevel-1];
-            for(let i=0; i<5; i++) quizQuestions.push(pool[i % pool.length] + Math.floor(Math.random()*12)*60);
+            const hPool = [0,1,2,3,4,5,6,7,8,9,10,11];
+            let mPool = [0];
+            if(currentLevel === 2) mPool = [0, 30];
+            if(currentLevel === 3) mPool = [0, 15, 30, 45];
+            if(currentLevel === 4) mPool = Array.from({length: 60}, (_, i) => i);
+            
+            for(let i=0; i<5; i++) {
+                const randH = hPool[Math.floor(Math.random()*hPool.length)];
+                const randM = mPool[Math.floor(Math.random()*mPool.length)];
+                quizQuestions.push(randH * 60 + randM);
+            }
             showQuizQuestion();
         }
 
@@ -472,7 +494,11 @@
 
         function checkQuizAnswer() {
             const target = quizQuestions[currentQuestionIndex] % 720, cur = currentMinutes % 720;
-            const isOk = Math.min(Math.abs(cur-target), 720-Math.abs(cur-target)) <= (currentLevel===4?3:0);
+            // Allow 2 minute margin for "All" mode because of free dragging
+            const margin = currentLevel === 4 ? 2 : 0;
+            const diff = Math.min(Math.abs(cur-target), 720-Math.abs(cur-target));
+            const isOk = diff <= margin;
+            
             if(isOk) { correctAnswers++; createConfetti(); }
             document.getElementById('quizQuestion').style.opacity = '0.4';
             const resDiv = document.getElementById('quizResult'); resDiv.classList.remove('hidden');
@@ -503,92 +529,123 @@
 
         function toggleTips() { document.getElementById('tipsOverlay').classList.toggle('active'); }
 
-        // Uusi Tarkka Viisareiden Valinta
-        function startDragging(e) {
+        // --- NEW IMPROVED DRAG LOGIC ---
+        function getMousePos(e) {
             const rect = canvas.getBoundingClientRect();
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
             const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            const x = clientX - rect.left;
-            const y = clientY - rect.top;
-            const dx = x - centerX;
-            const dy = y - centerY;
-            const distance = Math.sqrt(dx*dx + dy*dy);
-            
-            let angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+            // Scale according to canvas actual size vs displayed size
+            const x = (clientX - rect.left) * (canvas.width / rect.width);
+            const y = (clientY - rect.top) * (canvas.height / rect.height);
+            return { x, y };
+        }
+
+        function getAngle(x, y) {
+            let angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 90;
             if (angle < 0) angle += 360;
+            return angle;
+        }
+
+        function startDragging(e) {
+            if (currentMode === 'quiz' && !document.getElementById('quizResult').classList.contains('hidden')) return;
+
+            const pos = getMousePos(e);
+            const dist = Math.sqrt((pos.x-centerX)**2 + (pos.y-centerY)**2);
+            const angle = getAngle(pos.x, pos.y);
 
             const m = currentMinutes % 60;
             const h = Math.floor(currentMinutes / 60) % 12;
-            const minuteAngle = m * 6;
-            const hourAngle = h * 30 + m * 0.5;
+            
+            const mAngle = m * 6;
+            const hAngle = h * 30 + m * 0.5;
 
-            const diffMinute = Math.min(Math.abs(angle - minuteAngle), 360 - Math.abs(angle - minuteAngle));
-            const diffHour = Math.min(Math.abs(angle - hourAngle), 360 - Math.abs(angle - hourAngle));
+            // Difference in angles (handling 360 wrap)
+            const dMinute = Math.min(Math.abs(angle - mAngle), 360 - Math.abs(angle - mAngle));
+            const dHour = Math.min(Math.abs(angle - hAngle), 360 - Math.abs(angle - hAngle));
 
-            if (distance > 100) {
-                dragTarget = diffMinute < 25 ? 'minute' : null;
+            // Logic: if you click far, you likely want the minute hand.
+            // If you click close, you likely want the hour hand.
+            // But we also check which hand is actually closer to the touch angle.
+            if (dist < 40) {
+                dragTarget = null; // Too close to center
+            } else if (dist > 180) {
+                // If touching outer ring
+                if (currentLevel > 1) dragTarget = 'minute';
+                else dragTarget = 'hour';
             } else {
-                dragTarget = diffHour < 25 ? 'hour' : null;
-            }
+                // Determine by distance and angle
+                if (currentLevel === 1) {
+                    dragTarget = 'hour';
+                } else {
+                    // Weigh hands: hour hand is short, minute is long
+                    const isOverHour = dist < 120 && dHour < 25;
+                    const isOverMinute = dMinute < 20;
 
-            if (!dragTarget) {
-                dragTarget = diffMinute < diffHour ? 'minute' : 'hour';
+                    if (isOverHour && isOverMinute) {
+                        // If both overlap, prioritize minute hand if we are further out
+                        dragTarget = dist > 100 ? 'minute' : 'hour';
+                    } else if (isOverHour) {
+                        dragTarget = 'hour';
+                    } else if (isOverMinute) {
+                        dragTarget = 'minute';
+                    } else {
+                        // Fallback: Pick closest angle
+                        dragTarget = dHour < dMinute ? 'hour' : 'minute';
+                    }
+                }
+            }
+            
+            if (dragTarget) {
+                handleInteraction(e);
             }
         }
 
         function handleInteraction(e) {
-            if (!dragTarget) return; 
+            if (!dragTarget) return;
             if (e.cancelable) e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            const dx = clientX - rect.left - centerX;
-            const dy = clientY - rect.top - centerY;
-            
-            let angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
-            if (angle < 0) angle += 360;
-            
-            const currentM = currentMinutes % 60;
-            
-            if (dragTarget === 'minute') { 
-                const m = Math.round(angle / 6) % 60; 
-                currentMinutes = (Math.floor(currentMinutes / 60) * 60) + m; 
-                snapToLevel(currentLevel); 
-            } else if (dragTarget === 'hour') { 
-                const newHour = angle / 30;
-                const baseHour = Math.floor(newHour) % 12;
-                currentMinutes = baseHour * 60 + currentM;
-                if (currentLevel === 1) currentMinutes = baseHour * 60;
+
+            const pos = getMousePos(e);
+            const angle = getAngle(pos.x, pos.y);
+
+            if (dragTarget === 'minute') {
+                const m = Math.round(angle / 6) % 60;
+                const h = Math.floor(currentMinutes / 60);
+                currentMinutes = h * 60 + m;
+            } else {
+                // Hour hand - maps 360 degrees to 12 hours
+                const h = Math.floor(angle / 30) % 12;
+                const m = currentMinutes % 60;
+                currentMinutes = h * 60 + m;
             }
+
+            snapToLevel();
             updateDisplay();
         }
 
+        // Listeners
         canvas.addEventListener('mousedown', startDragging);
         window.addEventListener('mousemove', handleInteraction);
         window.addEventListener('mouseup', () => dragTarget = null);
         
         canvas.addEventListener('touchstart', e => {
             startDragging(e);
-            if (dragTarget) e.preventDefault();
         }, {passive:false});
         canvas.addEventListener('touchmove', e => {
-            if (dragTarget) {
-                handleInteraction(e);
-                e.preventDefault();
-            }
+            handleInteraction(e);
         }, {passive:false});
         canvas.addEventListener('touchend', () => dragTarget = null);
 
-        // Zaman Giriş Alanı Dinleyicisi
         document.getElementById('timeInput').addEventListener('input', (e) => {
             const val = e.target.value;
             if (!val) return;
             const [h, m] = val.split(':').map(Number);
             currentMinutes = (h % 12) * 60 + m;
+            snapToLevel();
             updateDisplay();
         });
 
-        setLanguage('fi'); setLevel(1);
+        // Initialize
+        setLevel(1);
     </script>
 </body>
 </html>
